@@ -25,6 +25,17 @@
    | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | For checkout | `pk_test_...` |
    | `STRIPE_WEBHOOK_SECRET` | For webhooks | From Stripe → Webhooks |
 
+   Optional OAuth (social sign-in buttons appear when both ID + secret are set):
+
+   | Variable | Provider |
+   |----------|----------|
+   | `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | Google |
+   | `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` | GitHub |
+   | `AUTH_FACEBOOK_ID` / `AUTH_FACEBOOK_SECRET` | Facebook |
+   | `AUTH_APPLE_ID` / `AUTH_APPLE_SECRET` | Apple |
+
+   OAuth redirect URI pattern: `https://YOUR-DOMAIN/api/auth/callback/google` (replace `google` with provider id).
+
    Optional observability (copy from `.env.local`):
 
    | Variable | Purpose |

@@ -74,6 +74,9 @@ const headerButtonSx = {
   minHeight: 40,
   height: 40,
   whiteSpace: "nowrap",
+  px: 2.5,
+  flexShrink: 0,
+  width: { xs: "100%", sm: "auto" },
 };
 
 type Props = {
@@ -153,14 +156,14 @@ export function AccountDashboard({ email, name }: Props) {
             display: "grid",
             gridTemplateColumns: {
               xs: "1fr",
-              md: `minmax(0, 1fr) ${filterToolbarWidth}px`,
+              md: "minmax(0, 1fr) auto",
             },
             columnGap: 2,
             rowGap: 2,
             alignItems: "center",
           }}
         >
-          <Box>
+          <Box sx={{ minWidth: 0 }}>
             <Typography variant="h1" sx={{ fontSize: "2rem", mb: 0.5 }}>
               {t("account.myAccount")}
             </Typography>
@@ -169,21 +172,19 @@ export function AccountDashboard({ email, name }: Props) {
               {email}
             </Typography>
           </Box>
-          <Box
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={1.5}
             sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-              gap: 1.5,
-              width: "100%",
-              maxWidth: { xs: "100%", md: filterToolbarWidth },
               justifySelf: { md: "end" },
+              alignItems: { xs: "stretch", sm: "center" },
             }}
           >
             <ButtonLink href="/products" variant="outlined" sx={headerButtonSx}>
               {t("common.continueShopping")}
             </ButtonLink>
-            <SignOutButton />
-          </Box>
+            <SignOutButton fullWidth={false} sx={headerButtonSx} />
+          </Stack>
         </Box>
       </Paper>
 

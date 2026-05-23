@@ -135,13 +135,24 @@
     "applied": "Applied"
   },
   "login": {
-    "title": "Sign in",
-    "helper": "Demo credentials are set via environment variables. See .env.example.",
+    "title": "Welcome back",
+    "subtitle": "Sign in to view orders, save your details, and check out securely.",
     "email": "Email",
     "password": "Password",
-    "submit": "Sign in",
+    "submit": "Sign in with email",
     "submitting": "Signing in…",
-    "invalidCredentials": "Invalid email or password"
+    "invalidCredentials": "Invalid email or password",
+    "oauthError": "Sign-in was cancelled or failed. Please try again.",
+    "continueWithEmail": "Or continue with email",
+    "continueWith": "Continue with {provider}",
+    "socialHint": "Quick sign-in with your existing account",
+    "privacyNote": "By continuing, you agree to our terms of service and privacy policy.",
+    "providers": {
+      "google": "Google",
+      "github": "GitHub",
+      "facebook": "Facebook",
+      "apple": "Apple"
+    }
   },
   "checkout": {
     "title": "Checkout",

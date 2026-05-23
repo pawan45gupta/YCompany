@@ -14,6 +14,8 @@ const linkButtonSx = {
   textDecoration: "none",
   boxSizing: "border-box",
   verticalAlign: "unset",
+  lineHeight: 1.5,
+  overflow: "visible",
 } as const;
 
 export function ButtonLink({ href, sx, ...props }: Props) {
