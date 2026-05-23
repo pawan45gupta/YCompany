@@ -69,6 +69,57 @@ vercel --prod --token "$VERCEL_TOKEN"
 
 ---
 
+## Git: SSH key added but still “Missing or invalid credentials”
+
+**SSH keys do not apply to HTTPS remotes.** Check your remote:
+
+```bash
+git remote -v
+```
+
+| Remote URL | What to use |
+|------------|-------------|
+| `https://github.com/...` | GitHub **Personal Access Token** as password (not your SSH key) |
+| `git@github.com:...` | Your **SSH key** |
+
+Switch to SSH (recommended if you added an SSH key):
+
+```bash
+git remote set-url origin git@github.com:pawan45gupta/YCompany.git
+ssh -T git@github.com   # should say: Hi pawan45gupta!
+git push -u origin main
+```
+
+First-time SSH: if you see `Host key verification failed`, run:
+
+```bash
+ssh-keyscan github.com >> ~/.ssh/known_hosts
+```
+
+## Vercel: “Missing or invalid credentials” when importing Git
+
+This is **not** your repo SSH key. Vercel needs **GitHub OAuth**:
+
+1. [vercel.com/account/integrations](https://vercel.com/account/integrations) → **GitHub** → Connect / Reconnect
+2. Grant access to the `pawan45gupta` account and the **YCompany** repository
+3. Import again at [vercel.com/new](https://vercel.com/new)
+
+If the repo is private, ensure Vercel has permission to read it (GitHub → Settings → Applications → Vercel).
+
+## Site login: “Invalid email or password” on Vercel
+
+Demo login: `demo@ycompany.com` / `YCompanyDemo!2026`
+
+In **Vercel → Project → Settings → Environment Variables**, set `AUTH_DEMO_PASSWORD_HASH` to the **raw** bcrypt string (no `\` before `$`):
+
+```
+$2b$10$aqCHeAPV0ACX2C40a20RBO8D.bP7RPq3fYN5Y/umMs6QKptm44xW6
+```
+
+Also set `AUTH_SECRET`, `AUTH_URL`, and `NEXTAUTH_URL` to your `https://….vercel.app` URL, then **Redeploy**.
+
+---
+
 ## Troubleshooting
 
 | Issue | Fix |

@@ -22,11 +22,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!parsed.success) return null;
 
         const demoEmail = process.env.AUTH_DEMO_EMAIL ?? "demo@ycompany.com";
-        const hash = process.env.AUTH_DEMO_PASSWORD_HASH;
-        if (!hash) {
+        const rawHash = process.env.AUTH_DEMO_PASSWORD_HASH;
+        if (!rawHash) {
           console.error("AUTH_DEMO_PASSWORD_HASH is not set");
           return null;
         }
+        // Vercel/dashboard: paste hash without backslashes. Local .env may use \$ escapes.
+        const hash = rawHash.replaceAll("\\$", "$");
 
         if (parsed.data.email.toLowerCase() !== demoEmail.toLowerCase()) {
           return null;
