@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# YCompany
 
-## Getting Started
+Next.js apparel ecommerce: **Material UI**, **NextAuth** (credentials), **Stripe Checkout**, **Vitest + React Testing Library**, **Docker** (standalone), **Kubernetes** manifests, **Vercel**-ready.
 
-First, run the development server:
+## Setup
+
+1. Copy environment variables:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Set `AUTH_SECRET` (e.g. `openssl rand -base64 32`), Stripe test keys from the [Stripe Dashboard](https://dashboard.stripe.com/test/apikeys), and optional `NEXT_PUBLIC_SITE_URL` for production URLs in metadata/sitemap.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Demo login (see `.env.example` for the bcrypt hash): email `demo@ycompany.com`, password `YCompanyDemo!2026`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Install and run:
 
-## Learn More
+```bash
+npm install
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Open [http://localhost:3000](http://localhost:3000).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Command | Description |
+|--------|-------------|
+| `npm run dev` | Development server (webpack; required for NextAuth API routes in Next.js 16) |
+| `npm run build` | Production build (requires env vars from `.env.example`) |
+| `npm run start` | Start production server |
+| `npm run test` / `npm run test:ci` | Vitest |
 
-## Deploy on Vercel
+## Observability (optional)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Set keys in `.env.local` — all integrations are **no-ops** when variables are empty.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Tool | Purpose | Env vars |
+|------|---------|----------|
+| **Sentry** | Error tracking, session replay, performance traces | `NEXT_PUBLIC_SENTRY_DSN`, optional `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` |
+| **Google Analytics** | Page views and engagement (GA4) | `NEXT_PUBLIC_GA_MEASUREMENT_ID` |
+| **New Relic** | APM, server metrics, distributed tracing | `NEW_RELIC_LICENSE_KEY`, `NEW_RELIC_APP_NAME` |
+
+- API errors: use `reportError()` from `src/lib/observability/errors.ts`
+- Production with New Relic locally: `npm run start:monitored`
+- Docker/K8s: set `NEW_RELIC_LICENSE_KEY` on the container (agent preloads automatically)
+
+## Docs
+
+- Roadmap and feature checklist: [PLAN.md](./PLAN.md)
+- Stripe webhooks locally: `stripe listen --forward-to localhost:3000/api/webhooks/stripe`
+
+## Deploy
+
+### Vercel (recommended)
+
+The repo includes `vercel.json` for Next.js. **Step-by-step:** [docs/DEPLOY-VERCEL.md](./docs/DEPLOY-VERCEL.md)
+
+1. Push to GitHub/GitLab/Bitbucket.
+2. [Import on Vercel](https://vercel.com/new) → select the repo.
+3. Add environment variables (at minimum `AUTH_SECRET`, `AUTH_DEMO_PASSWORD_HASH`, `AUTH_URL`, `NEXTAUTH_URL`, `NEXT_PUBLIC_SITE_URL` — all set to your `https://….vercel.app` URL after the first deploy).
+4. Deploy.
+
+CLI (after `vercel login`): `npm run deploy`
+
+### Other targets
+
+- **Docker**: `docker build -t ycompany .` (pass build args for `AUTH_SECRET`, Stripe keys, etc.).
+- **Kubernetes**: see `k8s/` — create ConfigMap/Secret from the `*.example.yaml` files, then `kubectl apply -f k8s/`.

@@ -1,0 +1,9 @@
+# Copy to configmap.yaml and apply after editing values.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ycompany-config
+data:
+  AUTH_URL: "https://your-domain.example"
+  AUTH_DEMO_EMAIL: "demo@ycompany.com"
+  NEXT_PUBLIC_SITE_URL: "https://your-domain.example"

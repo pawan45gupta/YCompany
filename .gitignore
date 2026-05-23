@@ -20,6 +20,9 @@
 # production
 /build
 
+# runtime order store (seeded on first demo login)
+/data/orders.json
+
 # misc
 .DS_Store
 *.pem
