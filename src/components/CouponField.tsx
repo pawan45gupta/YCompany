@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import { useMemo, useState } from "react";
 import { applyCoupon } from "@/lib/coupons";
+import { trackApplyCoupon } from "@/lib/observability/analytics";
 import { useTranslation } from "@/i18n/client";
 import { comfortableTextFieldSx } from "@/theme/form-fields";
 
@@ -48,14 +49,23 @@ export function CouponField({
   }, [live, touched, appliedCode, value, subtotalCents]);
 
   const apply = () => {
+    const code = value.trim().toUpperCase();
+    const applied = applyCoupon(code, subtotalCents);
     setTouched(true);
-    setAppliedCode(value.trim().toUpperCase());
+    setAppliedCode(code);
+    if (applied.valid) {
+      trackApplyCoupon(code, applied.discountCents, applied.freeShipping);
+    }
   };
 
   const applySuggested = (code: string) => {
     onChange(code);
+    const applied = applyCoupon(code, subtotalCents);
     setTouched(true);
     setAppliedCode(code);
+    if (applied.valid) {
+      trackApplyCoupon(code, applied.discountCents, applied.freeShipping);
+    }
   };
 
   const displayResult = appliedCode || (live && value.trim()) ? result : null;

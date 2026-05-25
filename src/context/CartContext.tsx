@@ -10,6 +10,7 @@ import {
 } from "react";
 import { products } from "@/data/products";
 import { clampAddQuantity } from "@/lib/inventory";
+import { trackAddToCart, trackRemoveFromCart } from "@/lib/observability/analytics";
 
 export type CartLine = { productId: string; quantity: number };
 
@@ -57,15 +58,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const allowed = clampAddQuantity(product, currentQty, qty);
       if (allowed < 1) return prev;
 
-      if (i === -1) return [...prev, { productId, quantity: allowed }];
+      if (i === -1) {
+        trackAddToCart(product, allowed);
+        return [...prev, { productId, quantity: allowed }];
+      }
       const next = [...prev];
       next[i] = { ...next[i], quantity: currentQty + allowed };
+      trackAddToCart(product, allowed);
       return next;
     });
   }, []);
 
   const remove = useCallback((productId: string) => {
-    setLines((prev) => prev.filter((l) => l.productId !== productId));
+    const product = products.find((p) => p.id === productId);
+    setLines((prev) => {
+      const line = prev.find((l) => l.productId === productId);
+      if (product && line) {
+        trackRemoveFromCart(product, line.quantity);
+      }
+      return prev.filter((l) => l.productId !== productId);
+    });
   }, []);
 
   const setQty = useCallback((productId: string, qty: number) => {

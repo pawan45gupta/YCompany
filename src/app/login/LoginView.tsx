@@ -18,6 +18,7 @@ import { SocialSignInButtons } from "@/components/auth/SocialSignInButtons";
 import { YCompanyLogo } from "@/components/YCompanyLogo";
 import type { OAuthProviderId } from "@/lib/auth-providers";
 import { getSafeCallbackUrl } from "@/lib/auth-redirect";
+import { trackLogin } from "@/lib/observability/analytics";
 import { useTranslation } from "@/i18n/client";
 import { comfortableTextFieldSx } from "@/theme/form-fields";
 
@@ -52,6 +53,7 @@ function LoginForm({ oauthProviders }: Props) {
       setError(t("login.invalidCredentials"));
       return;
     }
+    trackLogin("credentials");
     router.push(callbackUrl);
     router.refresh();
   };

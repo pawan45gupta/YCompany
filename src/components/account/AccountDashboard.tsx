@@ -26,6 +26,7 @@ import { SignOutButton } from "@/components/SignOutButton";
 import { useCancelOrder, useOrders } from "@/hooks/api";
 import { useTranslation } from "@/i18n/client";
 import { formatPrice } from "@/lib/product-filters";
+import { trackCancelOrder } from "@/lib/observability/analytics";
 import type { Order } from "@/types/order";
 import { canCancelOrder, orderStatusLabel } from "@/types/order";
 
@@ -134,6 +135,7 @@ export function AccountDashboard({ email, name }: Props) {
     setDismissedError(false);
     try {
       await cancelOrder({ orderId: cancelTarget.id });
+      trackCancelOrder(cancelTarget.id);
       setCancelTarget(null);
       resetCancel();
     } catch {

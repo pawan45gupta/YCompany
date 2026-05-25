@@ -8,7 +8,6 @@ const ORDERS_PATH = path.join(DATA_DIR, "orders.json");
 type OrdersFile = { orders: Order[] };
 
 declare global {
-  // eslint-disable-next-line no-var
   var __ycompanyOrders: Order[] | undefined;
 }
 

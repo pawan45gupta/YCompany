@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import type { OAuthProviderId } from "@/lib/auth-providers";
+import { trackLogin } from "@/lib/observability/analytics";
 import { useTranslation } from "@/i18n/client";
 
 type Props = {
@@ -110,6 +111,7 @@ export function SocialSignInButtons({ providers, callbackUrl }: Props) {
 
   const handleSocialSignIn = (id: OAuthProviderId) => {
     setLoadingId(id);
+    trackLogin(id);
     void signIn(id, { callbackUrl });
   };
 

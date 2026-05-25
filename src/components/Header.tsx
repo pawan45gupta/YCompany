@@ -25,6 +25,7 @@ import { useCart } from "@/context/CartContext";
 import { UserMenu } from "@/components/UserMenu";
 import { YCompanyLogo } from "@/components/YCompanyLogo";
 import { useTranslation } from "@/i18n/client";
+import { trackSearch } from "@/lib/observability/analytics";
 
 const navLinkSx = {
   display: "inline-flex",
@@ -58,6 +59,7 @@ export function Header() {
   const onSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const qv = q.trim();
+    if (qv) trackSearch(qv);
     router.push(qv ? `/search?q=${encodeURIComponent(qv)}` : "/search");
   };
 

@@ -40,6 +40,7 @@ import {
   parseFiltersFromSearchParams,
 } from "@/lib/product-filters";
 import { useDebounce } from "@/lib/use-debounce";
+import { trackSearch } from "@/lib/observability/analytics";
 import type { ProductFilters, ProductSort } from "@/types/product";
 
 const SORT_VALUES: ProductSort[] = ["relevance", "price-asc", "price-desc", "name"];
@@ -175,13 +176,16 @@ export function SearchClient() {
   );
 
   const [queryInput, setQueryInput] = useState(filters.query ?? "");
+  const [lastUrlQuery, setLastUrlQuery] = useState(filters.query ?? "");
   const debouncedQuery = useDebounce(queryInput, 300);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [priceDraft, setPriceDraft] = useState<[number, number] | null>(null);
 
-  useEffect(() => {
-    setQueryInput(filters.query ?? "");
-  }, [filters.query]);
+  const urlQuery = filters.query ?? "";
+  if (urlQuery !== lastUrlQuery) {
+    setLastUrlQuery(urlQuery);
+    setQueryInput(urlQuery);
+  }
 
   const pushFilters = useCallback(
     (next: ProductFilters) => {
@@ -194,6 +198,7 @@ export function SearchClient() {
     const trimmed = debouncedQuery.trim();
     const urlQuery = searchParams.get("q")?.trim() ?? "";
     if (trimmed === urlQuery) return;
+    if (trimmed) trackSearch(trimmed);
     pushFilters({
       ...filters,
       query: trimmed || undefined,

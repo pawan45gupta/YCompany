@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToCartButton } from "@/components/AddToCartButton";
+import { ProductViewTracker } from "@/components/observability/ProductViewTracker";
 import { getProductBySlug, products } from "@/data/products";
 import { getTranslations } from "@/i18n/server";
 
@@ -52,6 +53,7 @@ export default async function ProductPage({ params }: Props) {
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+      <ProductViewTracker product={product} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

@@ -8,6 +8,7 @@ import { Suspense, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import { useSyncOrder } from "@/hooks/api";
 import { useTranslation } from "@/i18n/client";
+import { readStashedCheckout, trackPurchase } from "@/lib/observability/analytics";
 
 function SuccessInner() {
   const { t } = useTranslation();
@@ -18,6 +19,12 @@ function SuccessInner() {
 
   useEffect(() => {
     if (sessionId) {
+      const stashed = readStashedCheckout();
+      trackPurchase({
+        transactionId: sessionId,
+        currency: stashed?.currency,
+        valueCents: stashed?.valueCents,
+      });
       clear();
       syncOrder({ sessionId });
     }

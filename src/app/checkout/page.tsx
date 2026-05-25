@@ -20,27 +20,36 @@ import {
 } from "@mui/material";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { CouponField } from "@/components/CouponField";
 import { useCart } from "@/context/CartContext";
 import { useCheckout } from "@/hooks/api";
 import { useTranslation } from "@/i18n/client";
 import { computeCartTotals, formatMoney } from "@/lib/cart-totals";
+import {
+  buildGaItemsFromCartRows,
+  stashCheckoutForPurchase,
+  trackBeginCheckout,
+} from "@/lib/observability/analytics";
 import { comfortableTextFieldSx } from "@/theme/form-fields";
 
 export default function CheckoutPage() {
   const { t } = useTranslation();
   const { data: session, status } = useSession();
   const { lines } = useCart();
-  const [coupon, setCoupon] = useState("");
+  const searchParams = useSearchParams();
+  const urlCoupon = searchParams.get("coupon")?.trim().toUpperCase() ?? "";
+  const [coupon, setCoupon] = useState(urlCoupon);
+  const [lastUrlCoupon, setLastUrlCoupon] = useState(urlCoupon);
   const [guestEmail, setGuestEmail] = useState("");
   const { startCheckout, isPending: loading, errorMessage } = useCheckout();
 
-  useEffect(() => {
-    const c = new URLSearchParams(window.location.search).get("coupon");
-    if (c) setCoupon(c.trim().toUpperCase());
-  }, []);
+  if (urlCoupon !== lastUrlCoupon) {
+    setLastUrlCoupon(urlCoupon);
+    setCoupon(urlCoupon);
+  }
 
   const totals = useMemo(
     () => computeCartTotals(lines, coupon),
@@ -52,6 +61,16 @@ export default function CheckoutPage() {
   const canPay = totals.rows.length > 0 && emailValid;
 
   const pay = () => {
+    stashCheckoutForPurchase({
+      currency: totals.rows[0]?.product.currency ?? "usd",
+      valueCents: totals.totalCents,
+    });
+    trackBeginCheckout({
+      currency: totals.rows[0]?.product.currency ?? "usd",
+      valueCents: totals.totalCents,
+      items: buildGaItemsFromCartRows(totals.rows),
+      coupon: coupon.trim() || undefined,
+    });
     void startCheckout({
       items: lines.map((l) => ({
         productId: l.productId,
