@@ -53,8 +53,14 @@ export default sentryEnabled
       authToken: process.env.SENTRY_AUTH_TOKEN,
       silent: !process.env.CI,
       widenClientFileUpload: true,
-      disableLogger: true,
-      automaticVercelMonitors: true,
+      // NB: `disableLogger` and `automaticVercelMonitors` were removed.
+      // Their successors live under `webpack.*` (e.g.
+      // `webpack.treeshake.removeDebugLogging`,
+      // `webpack.automaticVercelMonitors`) and only take effect with the
+      // webpack bundler. This project builds with Turbopack
+      // (`next build`/`next dev --webpack` aside), where the entire
+      // `webpack.*` section is ignored — so we omit them rather than
+      // carry dead config that emits deprecation warnings on every build.
       sourcemaps: {
         disable: !process.env.SENTRY_AUTH_TOKEN,
       },

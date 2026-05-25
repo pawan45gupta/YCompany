@@ -3,15 +3,9 @@
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
-declare global {
-  interface Window {
-    gtag?: (
-      command: "config" | "event" | "js",
-      targetId: string | Date,
-      config?: Record<string, string>,
-    ) => void;
-  }
-}
+// The canonical `window.gtag` global type is declared once in
+// `@/lib/observability/analytics`; we reuse it here so calls like
+// `gtag("config", id, { page_path })` type-check identically.
 
 type Props = {
   measurementId: string;
