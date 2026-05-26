@@ -6,6 +6,7 @@ import Apple from "next-auth/providers/apple";
 import bcrypt from "bcryptjs";
 import type { Provider } from "next-auth/providers";
 import { z } from "zod";
+import { verifyCredentials } from "@/lib/users/store";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -82,21 +83,34 @@ export function buildAuthProviders(): Provider[] {
         const parsed = credentialsSchema.safeParse(credentials);
         if (!parsed.success) return null;
 
+        // 1) Real signed-up users live in the user store. This is the
+        //    primary path now that /signup exists.
+        const found = await verifyCredentials(
+          parsed.data.email,
+          parsed.data.password,
+        );
+        if (found) {
+          return {
+            id: found.id,
+            email: found.email,
+            name: found.name ?? "YCompany Customer",
+          };
+        }
+
+        // 2) Demo-user fallback. Useful for first-run / CI where no users
+        //    exist yet and the maintainer wants to log in with the seeded
+        //    AUTH_DEMO_EMAIL / AUTH_DEMO_PASSWORD_HASH env pair. If the
+        //    user later signs up with the same email, the store path
+        //    above takes over.
         const demoEmail = process.env.AUTH_DEMO_EMAIL ?? "demo@ycompany.com";
         const rawHash = process.env.AUTH_DEMO_PASSWORD_HASH;
-        if (!rawHash) {
-          console.error("AUTH_DEMO_PASSWORD_HASH is not set");
-          return null;
-        }
-        const hash = rawHash.replaceAll("\\$", "$");
-
+        if (!rawHash) return null;
         if (parsed.data.email.toLowerCase() !== demoEmail.toLowerCase()) {
           return null;
         }
-
+        const hash = rawHash.replaceAll("\\$", "$");
         const valid = await bcrypt.compare(parsed.data.password, hash);
         if (!valid) return null;
-
         return {
           id: "demo-user",
           name: "YCompany Customer",

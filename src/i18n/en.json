@@ -13,6 +13,7 @@
     "cart": "Cart",
     "catalog": "Catalog",
     "signIn": "Sign in",
+    "signUp": "Sign up",
     "signOut": "Sign out",
     "account": "Account",
     "myAccount": "My account",
@@ -147,12 +148,59 @@
     "continueWith": "Continue with {provider}",
     "socialHint": "Quick sign-in with your existing account",
     "privacyNote": "By continuing, you agree to our terms of service and privacy policy.",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "createAccount": "Create an account",
     "providers": {
       "google": "Google",
       "github": "GitHub",
       "facebook": "Facebook",
       "apple": "Apple"
     }
+  },
+  "signup": {
+    "title": "Create your account",
+    "subtitle": "Save your details, track orders, and check out faster.",
+    "name": "Full name (optional)",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Create account",
+    "submitting": "Creating account…",
+    "haveAccount": "Already have an account?",
+    "signIn": "Sign in",
+    "emailTaken": "An account with this email already exists. Try signing in instead.",
+    "genericError": "Something went wrong. Please try again.",
+    "successAutoSignIn": "Account created — signing you in…"
+  },
+  "forgotPassword": {
+    "title": "Reset your password",
+    "subtitle": "Enter the email on your account and we'll send a link to set a new password.",
+    "email": "Email",
+    "submit": "Send reset link",
+    "submitting": "Sending…",
+    "backToSignIn": "Back to sign in",
+    "sentTitle": "Check your inbox",
+    "sentBody": "If an account exists for that email, a reset link is on its way. The link expires in 1 hour.",
+    "sentDevHint": "Dev mode: the reset URL is logged to the server console — look for \"[auth] password reset for …\"."
+  },
+  "resetPassword": {
+    "title": "Set a new password",
+    "subtitle": "Choose a strong password you don't use anywhere else.",
+    "password": "New password",
+    "confirmPassword": "Confirm password",
+    "mismatch": "Passwords do not match",
+    "submit": "Update password",
+    "submitting": "Updating…",
+    "invalidToken": "This reset link is invalid or has expired. Please request a new one.",
+    "successTitle": "Password updated",
+    "successBody": "You can now sign in with your new password.",
+    "goToSignIn": "Go to sign in"
+  },
+  "passwordPolicy": {
+    "title": "Your password should:",
+    "length": "Be at least 8 characters",
+    "letter": "Include a letter",
+    "digit": "Include a number"
   },
   "checkout": {
     "title": "Checkout",
@@ -221,6 +269,8 @@
     "emailRequired": "Sign in or provide an email for checkout",
     "orderNotFound": "Order not found",
     "cannotCancel": "This order can no longer be cancelled",
-    "tooManyRequests": "Too many requests"
+    "tooManyRequests": "Too many requests",
+    "emailTaken": "An account with this email already exists",
+    "resetTokenInvalid": "Invalid or expired reset link"
   }
 }

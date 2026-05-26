@@ -1,0 +1,18 @@
+{
+  "users": [
+    {
+      "id": "ef877903-75e1-4fab-90a2-2a7fa42c7d2e",
+      "email": "demo@yopmail.com",
+      "name": "demo",
+      "passwordHash": "$2b$12$KCfrMXVqwS2VxayIMv/InOdCaV1KdMSwV7FxsYISQv1kXnfrgLqXi",
+      "createdAt": "2026-05-26T17:01:59.666Z"
+    },
+    {
+      "id": "faa293e1-6e23-4806-aec3-c457e70566f6",
+      "email": "demo2_pawan_2026@yopmail.com",
+      "name": "demo2",
+      "passwordHash": "$2b$12$Mjn41Nh7DUUs7a9xDzusOu55V21fFn7LtMxbyaKebw3VgcSpyRrPS",
+      "createdAt": "2026-05-26T17:04:34.258Z"
+    }
+  ]
+}

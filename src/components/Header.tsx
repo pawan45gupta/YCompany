@@ -81,9 +81,24 @@ export function Header() {
       {session ? (
         <UserMenu />
       ) : (
-        <MuiLink component={Link} href="/login" underline="none" sx={navLinkSx}>
-          {t("common.signIn")}
-        </MuiLink>
+        <>
+          <MuiLink component={Link} href="/login" underline="none" sx={navLinkSx}>
+            {t("common.signIn")}
+          </MuiLink>
+          <MuiLink
+            component={Link}
+            href="/signup"
+            underline="none"
+            sx={{
+              ...navLinkSx,
+              color: "primary.contrastText",
+              bgcolor: "primary.main",
+              "&:hover": { bgcolor: "primary.dark", opacity: 1 },
+            }}
+          >
+            {t("common.signUp")}
+          </MuiLink>
+        </>
       )}
       <IconButton
         component={Link}
@@ -205,9 +220,19 @@ export function Header() {
                 </MuiLink>
               </>
             ) : (
-              <MuiLink component={Link} href="/login" onClick={() => setMobileOpen(false)}>
-                {t("common.signIn")}
-              </MuiLink>
+              <>
+                <MuiLink component={Link} href="/login" onClick={() => setMobileOpen(false)}>
+                  {t("common.signIn")}
+                </MuiLink>
+                <MuiLink
+                  component={Link}
+                  href="/signup"
+                  onClick={() => setMobileOpen(false)}
+                  sx={{ fontWeight: 600 }}
+                >
+                  {t("common.signUp")}
+                </MuiLink>
+              </>
             )}
             <MuiLink component={Link} href="/cart" onClick={() => setMobileOpen(false)}>
               {t("header.cartWithCount", { count: cartCount })}
