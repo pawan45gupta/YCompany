@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { parseSignupBody } from "@/lib/env";
+import {
+  nrRecordEvent,
+  nrSetUserId,
+} from "@/lib/observability/newrelic-server";
 import { rateLimit } from "@/lib/rate-limit";
 import { createUser } from "@/lib/users/store";
 import { apiMessage } from "@/i18n/api";
@@ -57,11 +61,21 @@ export async function POST(req: Request) {
     // "email_taken" is the only failure mode createUser can return today.
     // We return 409 (Conflict) which is the conventional status for
     // unique-constraint violations and gives the client a clean branch.
+    void nrRecordEvent("SignupRejected", {
+      reason: result.reason,
+      email_domain: parsed.email.split("@")[1] ?? "unknown",
+    });
     return NextResponse.json(
       { error: apiMessage("emailTaken") },
       { status: 409 },
     );
   }
 
+  void nrSetUserId(result.user.id);
+  void nrRecordEvent("Signup", {
+    user_id: result.user.id,
+    email_domain: parsed.email.split("@")[1] ?? "unknown",
+    has_name: Boolean(result.user.name),
+  });
   return NextResponse.json({ user: result.user }, { status: 201 });
 }

@@ -21,6 +21,7 @@ import { SocialSignInButtons } from "@/components/auth/SocialSignInButtons";
 import type { OAuthProviderId } from "@/lib/auth-providers";
 import { getSafeCallbackUrl } from "@/lib/auth-redirect";
 import { evaluatePassword } from "@/lib/auth/password-policy";
+import { trackSignup } from "@/lib/observability/analytics";
 import { useTranslation } from "@/i18n/client";
 import { comfortableTextFieldSx } from "@/theme/form-fields";
 
@@ -79,6 +80,7 @@ function SignupForm({ oauthProviders }: Props) {
       // sign-in errors here (the account already exists; the user can
       // sign in manually from /login if NextAuth fails for some reason).
       setSuccess(true);
+      trackSignup("credentials");
       const signInRes = await signIn("credentials", {
         email,
         password,

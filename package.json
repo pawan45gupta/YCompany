@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack",
+    "dev": "NODE_EXTRA_CA_CERTS=./corporate-ca-bundle.pem next dev --webpack",
     "build": "next build",
-    "start": "next start",
-    "start:monitored": "NODE_OPTIONS='-r newrelic' next start",
+    "start": "NODE_EXTRA_CA_CERTS=./corporate-ca-bundle.pem next start",
+    "start:monitored": "NODE_EXTRA_CA_CERTS=./corporate-ca-bundle.pem NODE_OPTIONS='-r newrelic' next start",
     "lint": "eslint",
     "test": "vitest",
     "test:ci": "vitest run",

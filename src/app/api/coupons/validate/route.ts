@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { applyCoupon } from "@/lib/coupons";
 import { parseCouponBody } from "@/lib/env";
+import { nrRecordEvent } from "@/lib/observability/newrelic-server";
 import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
@@ -31,5 +32,12 @@ export async function POST(req: Request) {
   }
 
   const result = applyCoupon(parsed.code, parsed.subtotalCents);
+  void nrRecordEvent(result.valid ? "CouponApplied" : "CouponRejected", {
+    code: parsed.code.toUpperCase(),
+    subtotal_cents: parsed.subtotalCents,
+    discount_cents: result.valid ? result.discountCents : 0,
+    free_shipping: result.valid ? result.freeShipping : false,
+    reason: result.valid ? "" : result.message,
+  });
   return NextResponse.json(result);
 }

@@ -5,6 +5,7 @@ import {
   getCatalogPriceBounds,
   parseFiltersFromSearchParams,
 } from "@/lib/product-filters";
+import { nrRecordEvent } from "@/lib/observability/newrelic-server";
 import { searchCatalog } from "@/lib/search-index";
 import { rateLimit } from "@/lib/rate-limit";
 
@@ -37,6 +38,20 @@ export async function GET(req: Request) {
   const started = performance.now();
   const results = searchCatalog(products, filters);
   const tookMs = Math.round(performance.now() - started);
+
+  // Only emit a NR event when there's an actual search term. Cold loads
+  // of /search (no `q`) would otherwise flood the events feed.
+  if (filters.query) {
+    void nrRecordEvent("Search", {
+      query: filters.query,
+      result_count: results.length,
+      took_ms: tookMs,
+      brand_count: filters.brands?.length ?? 0,
+      has_price_filter:
+        filters.minPriceCents !== bounds.min ||
+        filters.maxPriceCents !== bounds.max,
+    });
+  }
 
   return NextResponse.json(
     {

@@ -4,6 +4,7 @@ import {
   buildLinesFromMetadata,
   createOrderFromCheckout,
 } from "@/lib/orders/service";
+import { nrRecordEvent } from "@/lib/observability/newrelic-server";
 import { getStripe } from "@/lib/stripe";
 
 export async function POST(req: Request) {
@@ -54,6 +55,22 @@ export async function POST(req: Request) {
           discountCents: Math.max(0, checkout.total_details?.amount_discount ?? 0),
           totalCents: checkout.amount_total ?? subtotalCents,
           currency: checkout.currency ?? "usd",
+        });
+        // Authoritative Purchase event: GA4 also fires Purchase from the
+        // checkout-success page, but the webhook fires once per *paid*
+        // session — making this the only signal that's robust against the
+        // user closing the tab on the success screen.
+        void nrRecordEvent("Purchase", {
+          transaction_id: checkout.id,
+          user_id: userId,
+          total_cents: checkout.amount_total ?? subtotalCents,
+          subtotal_cents: subtotalCents,
+          shipping_cents: Math.max(0, checkout.total_details?.amount_shipping ?? 0),
+          discount_cents: Math.max(0, checkout.total_details?.amount_discount ?? 0),
+          currency: checkout.currency ?? "usd",
+          item_count: lines.length,
+          item_quantity: lines.reduce((s, l) => s + l.quantity, 0),
+          coupon: checkout.metadata?.coupon ?? "",
         });
       }
 

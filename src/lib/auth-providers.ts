@@ -6,6 +6,10 @@ import Apple from "next-auth/providers/apple";
 import bcrypt from "bcryptjs";
 import type { Provider } from "next-auth/providers";
 import { z } from "zod";
+import {
+  nrRecordEvent,
+  nrSetUserId,
+} from "@/lib/observability/newrelic-server";
 import { verifyCredentials } from "@/lib/users/store";
 
 const credentialsSchema = z.object({
@@ -90,6 +94,12 @@ export function buildAuthProviders(): Provider[] {
           parsed.data.password,
         );
         if (found) {
+          void nrSetUserId(found.id);
+          void nrRecordEvent("Login", {
+            method: "credentials",
+            user_id: found.id,
+            email_domain: parsed.data.email.split("@")[1] ?? "unknown",
+          });
           return {
             id: found.id,
             email: found.email,
@@ -104,13 +114,31 @@ export function buildAuthProviders(): Provider[] {
         //    above takes over.
         const demoEmail = process.env.AUTH_DEMO_EMAIL ?? "demo@ycompany.com";
         const rawHash = process.env.AUTH_DEMO_PASSWORD_HASH;
-        if (!rawHash) return null;
+        if (!rawHash) {
+          void nrRecordEvent("LoginFailed", {
+            method: "credentials",
+            reason: "unknown_user",
+          });
+          return null;
+        }
         if (parsed.data.email.toLowerCase() !== demoEmail.toLowerCase()) {
+          void nrRecordEvent("LoginFailed", {
+            method: "credentials",
+            reason: "unknown_user",
+          });
           return null;
         }
         const hash = rawHash.replaceAll("\\$", "$");
         const valid = await bcrypt.compare(parsed.data.password, hash);
-        if (!valid) return null;
+        if (!valid) {
+          void nrRecordEvent("LoginFailed", {
+            method: "credentials",
+            reason: "bad_password",
+          });
+          return null;
+        }
+        void nrSetUserId("demo-user");
+        void nrRecordEvent("Login", { method: "credentials", user_id: "demo-user" });
         return {
           id: "demo-user",
           name: "YCompany Customer",

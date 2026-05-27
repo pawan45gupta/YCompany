@@ -4,6 +4,7 @@ import { AppProviders } from "@/components/AppProviders";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { GoogleAnalyticsProvider } from "@/components/observability/GoogleAnalytics";
+import { NewRelicBrowser } from "@/components/observability/NewRelicBrowser";
 import { getTranslations } from "@/i18n/server";
 import "./globals.css";
 
@@ -56,6 +57,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+      <head>
+        {/* NR Browser agent — must boot before any other JS so it can
+            attach AJAX/error/timing handlers. Server-rendered each request
+            to bind to the active APM transaction. No-ops when NR is off. */}
+        <NewRelicBrowser />
+      </head>
       <body
         style={{
           margin: 0,

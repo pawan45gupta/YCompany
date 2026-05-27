@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { products } from "@/data/products";
 import { applyCoupon } from "@/lib/coupons";
 import { isStripeConfigured, parseCheckoutBody } from "@/lib/env";
+import { nrRecordEvent } from "@/lib/observability/newrelic-server";
 import { rateLimit } from "@/lib/rate-limit";
 import { apiMessage } from "@/i18n/api";
 import { getStripe } from "@/lib/stripe";
@@ -178,6 +179,19 @@ export async function POST(req: Request) {
         { status: 500 },
       );
     }
+
+    void nrRecordEvent("BeginCheckout", {
+      session_id: checkoutSession.id,
+      user_id: session?.user?.id ?? "guest",
+      item_count: parsed.items.length,
+      item_quantity: parsed.items.reduce((s, i) => s + i.quantity, 0),
+      subtotal_cents: subtotalCents,
+      discount_cents: discountCents,
+      shipping_cents: shippingCents,
+      currency: "usd",
+      coupon: parsed.couponCode?.trim().toUpperCase() ?? "",
+      free_shipping: freeShipping,
+    });
 
     return NextResponse.json({ url: checkoutSession.url });
   } catch (err) {

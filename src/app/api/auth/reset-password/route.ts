@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { parseResetPasswordBody } from "@/lib/env";
+import { nrRecordEvent } from "@/lib/observability/newrelic-server";
 import { rateLimit } from "@/lib/rate-limit";
 import { consumeResetToken } from "@/lib/auth/password-reset";
 import { updatePassword } from "@/lib/users/store";
@@ -49,6 +50,7 @@ export async function POST(req: Request) {
   // first time — exactly the single-use semantics we want.
   const userId = consumeResetToken(parsed.token);
   if (!userId) {
+    void nrRecordEvent("PasswordResetRejected", { reason: "invalid_token" });
     return NextResponse.json(
       { error: apiMessage("resetTokenInvalid") },
       { status: 400 },
@@ -58,11 +60,16 @@ export async function POST(req: Request) {
   const updated = await updatePassword(userId, parsed.password);
   if (!updated) {
     // User was deleted between issuing the token and consuming it.
+    void nrRecordEvent("PasswordResetRejected", {
+      reason: "user_missing",
+      user_id: userId,
+    });
     return NextResponse.json(
       { error: apiMessage("resetTokenInvalid") },
       { status: 400 },
     );
   }
 
+  void nrRecordEvent("PasswordResetCompleted", { user_id: userId });
   return NextResponse.json({ ok: true });
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { parseForgotPasswordBody } from "@/lib/env";
+import { nrRecordEvent } from "@/lib/observability/newrelic-server";
 import { rateLimit } from "@/lib/rate-limit";
 import { findUserByEmail } from "@/lib/users/store";
 import {
@@ -58,6 +59,12 @@ export async function POST(req: Request) {
   // — an attacker who scrapes signup error messages gets nothing extra
   // from probing the forgot endpoint.
   const user = findUserByEmail(parsed.email);
+  // NR event fires either way so the security team can spot enumeration
+  // sweeps (high volume + low `user_found` ratio).
+  void nrRecordEvent("PasswordResetRequested", {
+    user_found: Boolean(user),
+    email_domain: parsed.email.split("@")[1] ?? "unknown",
+  });
   if (user) {
     const { token, expiresAt } = issueResetToken(user.id);
     const resetUrl = buildResetUrl(token, getBaseUrl(req));
