@@ -25,14 +25,13 @@ import {
   Typography,
 } from "@mui/material";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useDeferredValue, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ProductCard } from "@/components/ProductCard";
-import { products } from "@/data/products";
+import { useProductSearch } from "@/hooks/api/use-product-search";
 import { useTranslation } from "@/i18n/client";
 import {
   buildSearchQueryString,
   countActiveFilters,
-  filterProducts,
   formatPrice,
   getBrandProductCounts,
   getCatalogBrands,
@@ -41,7 +40,7 @@ import {
 } from "@/lib/product-filters";
 import { useDebounce } from "@/lib/use-debounce";
 import { trackSearch } from "@/lib/observability/analytics";
-import type { ProductFilters, ProductSort } from "@/types/product";
+import type { ProductFilters, ProductSort, Product } from "@/types/product";
 
 const SORT_VALUES: ProductSort[] = ["relevance", "price-asc", "price-desc", "name"];
 
@@ -55,6 +54,56 @@ const SORT_KEYS: Record<ProductSort, string> = {
 const brands = getCatalogBrands();
 const priceBounds = getCatalogPriceBounds();
 const brandCounts = getBrandProductCounts();
+
+function SearchResultsBody({
+  isPending,
+  results,
+  isSearchStale,
+  onClearAll,
+}: {
+  isPending: boolean;
+  results: Product[];
+  isSearchStale: boolean;
+  onClearAll: () => void;
+}) {
+  const { t } = useTranslation();
+
+  if (isPending && results.length === 0) {
+    return <Typography color="text.secondary">{t("common.loading")}</Typography>;
+  }
+
+  if (results.length === 0) {
+    return (
+      <Paper variant="outlined" sx={{ p: 4, textAlign: "center", borderRadius: 2 }}>
+        <Typography variant="h6" gutterBottom>
+          {t("search.noMatches")}
+        </Typography>
+        <Typography color="text.secondary" sx={{ mb: 2 }}>
+          {t("search.noMatchesBody")}
+        </Typography>
+        <Button variant="contained" onClick={onClearAll}>
+          {t("search.resetSearch")}
+        </Button>
+      </Paper>
+    );
+  }
+
+  return (
+    <Box
+      sx={{
+        display: "grid",
+        gap: 3,
+        gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+        opacity: isSearchStale ? 0.72 : 1,
+        transition: "opacity 0.15s ease",
+      }}
+    >
+      {results.map((p) => (
+        <ProductCard key={p.id} product={p} />
+      ))}
+    </Box>
+  );
+}
 
 function FiltersPanel({
   filters,
@@ -215,20 +264,21 @@ export function SearchClient() {
 
   const displayPriceRange = priceDraft ?? priceRange;
 
-  const activeFilters = useMemo(
+  const searchFilters = useMemo(
     () => ({
       ...filters,
-      query: queryInput.trim() || undefined,
+      query: debouncedQuery.trim() || undefined,
     }),
-    [filters, queryInput],
+    [filters, debouncedQuery],
   );
 
-  const results = useMemo(
-    () => filterProducts(products, activeFilters),
-    [activeFilters],
-  );
-  const deferredResults = useDeferredValue(results);
-  const isSearchStale = deferredResults !== results;
+  const {
+    products: results,
+    isFetching,
+    isPending,
+    isPlaceholderData,
+  } = useProductSearch(searchFilters);
+  const isSearchStale = isFetching || isPlaceholderData;
 
   const updateQuery = (value: string) => {
     setQueryInput(value);
@@ -428,33 +478,12 @@ export function SearchClient() {
             </FormControl>
           </Stack>
 
-          {deferredResults.length === 0 ? (
-            <Paper variant="outlined" sx={{ p: 4, textAlign: "center", borderRadius: 2 }}>
-              <Typography variant="h6" gutterBottom>
-                {t("search.noMatches")}
-              </Typography>
-              <Typography color="text.secondary" sx={{ mb: 2 }}>
-                {t("search.noMatchesBody")}
-              </Typography>
-              <Button variant="contained" onClick={clearAll}>
-                {t("search.resetSearch")}
-              </Button>
-            </Paper>
-          ) : (
-            <Box
-              sx={{
-                display: "grid",
-                gap: 3,
-                gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-                opacity: isSearchStale ? 0.72 : 1,
-                transition: "opacity 0.15s ease",
-              }}
-            >
-              {deferredResults.map((p) => (
-                <ProductCard key={p.id} product={p} />
-              ))}
-            </Box>
-          )}
+          <SearchResultsBody
+            isPending={isPending}
+            results={results}
+            isSearchStale={isSearchStale}
+            onClearAll={clearAll}
+          />
         </Box>
       </Box>
     </Container>

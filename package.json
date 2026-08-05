@@ -11,10 +11,12 @@
     "test": "vitest",
     "test:ci": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "search:index": "NODE_EXTRA_CA_CERTS=./corporate-ca-bundle.pem tsx scripts/index-products.ts",
     "deploy": "vercel --prod",
     "deploy:preview": "vercel"
   },
   "dependencies": {
+    "@elastic/elasticsearch": "^9.5.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^9.0.0",
@@ -45,6 +47,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.3",
     "jsdom": "^29.0.2",
+    "tsx": "^4.23.7",
     "typescript": "^5",
     "vitest": "^4.1.4"
   }

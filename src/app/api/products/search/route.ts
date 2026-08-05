@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
-import { products } from "@/data/products";
 import {
   buildSearchQueryString,
   getCatalogPriceBounds,
   parseFiltersFromSearchParams,
 } from "@/lib/product-filters";
 import { nrRecordEvent } from "@/lib/observability/newrelic-server";
-import { searchCatalog } from "@/lib/search-index";
+import { searchProducts } from "@/lib/search";
 import { rateLimit } from "@/lib/rate-limit";
 
 export async function GET(req: Request) {
@@ -36,7 +35,7 @@ export async function GET(req: Request) {
   );
 
   const started = performance.now();
-  const results = searchCatalog(products, filters);
+  const { products: results, source } = await searchProducts(filters);
   const tookMs = Math.round(performance.now() - started);
 
   // Only emit a NR event when there's an actual search term. Cold loads
@@ -48,8 +47,8 @@ export async function GET(req: Request) {
       took_ms: tookMs,
       brand_count: filters.brands?.length ?? 0,
       has_price_filter:
-        filters.minPriceCents !== bounds.min ||
-        filters.maxPriceCents !== bounds.max,
+        filters.minPriceCents != null || filters.maxPriceCents != null,
+      source,
     });
   }
 
@@ -58,6 +57,7 @@ export async function GET(req: Request) {
       products: results,
       total: results.length,
       tookMs,
+      source,
       queryString: buildSearchQueryString(filters, bounds),
     },
     {

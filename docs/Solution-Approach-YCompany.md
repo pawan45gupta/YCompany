@@ -101,7 +101,7 @@ YCompany's strategic outcomes for the new platform are:
 | Lack of cross‑platform support        | Responsive MUI layouts, touch‑first controls, viewport metadata, PWA‑ready manifest.                 |
 | High initial load time                | `next/image`, MUI package import optimization, route‑level `loading.tsx`, dynamic imports.           |
 | Unresponsive UI                       | Debounced search, `useDeferredValue` for results, memoised components, optimistic UI via React Query. |
-| Inefficient product search            | Indexed in‑memory search + server‑side `/api/products/search` with cache headers.                    |
+| Inefficient product search            | Elastic Cloud full‑text search (optional) with in‑memory fallback; `/api/products/search` + cache headers. |
 | No inventory awareness                | Per‑SKU `stock` model and `clampAddQuantity()` enforced from PDP, cart and checkout.                  |
 | No unified observability              | Sentry (errors), Google Analytics 4 (commerce funnel), New Relic (APM) with no‑op fallbacks.         |
 
@@ -117,7 +117,7 @@ We propose a **Next.js 16 App Router** storefront, deployed primarily on **Verce
 | -------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | Customer storefront        | Home, PDP, category, search, cart, checkout success, account dashboard.                                    |
 | Authentication             | NextAuth v5 with Credentials (bcrypt) + OAuth providers (Google, GitHub, Facebook, Apple) when configured. |
-| Catalog + search           | Product model with stock + SKU; indexed search with brand counts; `/api/products/search` with caching.     |
+| Catalog + search           | Product model with stock + SKU; Elastic Cloud or in‑memory search; `/api/products/search` with caching.   |
 | Cart                       | React Context with `localStorage` persistence and per‑SKU stock clamping.                                  |
 | Checkout + payments        | Stripe hosted Checkout Sessions with coupons, free‑shipping rules and signed webhooks.                     |
 | Orders                     | Order creation on `checkout.session.completed`; user‑scoped order list, detail and cancellation APIs.       |
@@ -195,7 +195,7 @@ We propose a **Next.js 16 App Router** storefront, deployed primarily on **Verce
 | **Route Handlers (API)** | Server‑side endpoints for checkout, orders, coupons, products and webhooks; Zod‑validated and rate‑limited.          |
 | **Auth layer**           | NextAuth v5 providers, JWT sessions (7‑day TTL), bcrypt password hashing, `middleware.ts` guard.                     |
 | **Cart context**         | Client‑side React Context, `localStorage` persistence, inventory clamping.                                            |
-| **Search index**         | In‑memory `CatalogIndex` with brand counts; deterministic filtering, sortable; precomputed for fast filtering.        |
+| **Search index**         | Elastic Cloud when `ELASTICSEARCH_*` env is set; otherwise in‑memory `CatalogIndex` with brand counts (automatic fallback). |
 | **Payments**             | Stripe Checkout Sessions, coupons mirrored per session, signed webhooks for fulfilment.                                |
 | **Order service**        | Idempotent order creation from `checkout.session.completed`; user‑scoped queries; cancellation rules.                  |
 | **Observability**        | Sentry (errors + replay), GA4 (commerce events), New Relic (APM); all gated on env variables.                          |
@@ -271,7 +271,7 @@ Authenticated request to /account
 User types in /search
    │
    ▼
-SearchClient (use-debounce 200 ms)
+SearchClient (use-debounce 300 ms) + useProductSearch (React Query)
    │
    ├── URL sync (router.replace) — keeps deep links shareable
    │
@@ -279,14 +279,23 @@ SearchClient (use-debounce 200 ms)
 GET /api/products/search?q=&brands=&min=&max=&sort=
    │
    ├── rateLimit("search:" + ip, 120 / 60s)
-   ├── parseFiltersFromSearchParams() — Zod‑validated
+   ├── parseFiltersFromSearchParams()
    ▼
-searchCatalog(products, filters)   ◄── cached CatalogIndex with brand counts
+searchProducts(filters)   ◄── facade in src/lib/search.ts
    │
+   ├── Elastic Cloud configured? ──yes──► searchElasticsearch()
+   │         │                              │
+   │         │                              ├── multi_match (name^3, brand^2, material^2, …)
+   │         │                              ├── brand / price filters + sort
+   │         │                              └── on error ──► fall back to memory
+   │         │
+   │         └── no ──► searchCatalog() (in-memory CatalogIndex)
    ▼
-{ products, total, tookMs }   (Cache-Control: max-age=30, SWR=60)
+{ products, total, tookMs, source: "elasticsearch" | "memory" }
+   (Cache-Control: max-age=30, SWR=60)
 ```
 
+**Elastic Cloud (optional, demo):** set `ELASTICSEARCH_CLOUD_ID` and `ELASTICSEARCH_API_KEY` (trial at cloud.elastic.co). Seed the index with `npm run search:index` after catalog changes. Without credentials, search stays fully in-memory — suitable for demos that skip Elastic.
 ### 4.6 Order lifecycle
 
 ```text
@@ -782,14 +791,17 @@ src/
 │   ├── product-filters.ts    URL ↔ filter mapping, sort helpers
 │   ├── product-image.ts      catalog imagery resolution
 │   ├── rate-limit.ts         in‑memory bucket rate limiter
-│   ├── search-index.ts       indexed catalog search
+│   ├── search.ts             search facade (Elastic + memory fallback)
+│   ├── search-index.ts       in‑memory catalog search (fallback)
+│   ├── elasticsearch/        Elastic Cloud client, mapping, query
 │   └── stripe.ts             lazy Stripe SDK client
+├── scripts/
+│   └── index-products.ts     seed Elastic index (`npm run search:index`)
 ├── middleware.ts             NextAuth‑aware route protection
 ├── providers/QueryProvider   TanStack Query client provider
 ├── theme/                    MUI theme + form field styles
 └── types/                    Product, Order, NextAuth augmentation
 ```
-
 ### 16.3 Contact
 
 - **Engagement Lead:** Pawan Gupta — pawan.gupta@nagarro.com — +91 98112 83937

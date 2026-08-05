@@ -80,7 +80,7 @@ Key objectives:
   - **User profile / account dashboard** — order history, account details and sign‑out (`/account`).
 - **Product Management**
   - **Product catalog** — name, description, image, price, brand, category, tags, SKU and stock.
-  - **Search and filtering** — server‑side `/api/products/search` (rate‑limited) and instant client filtering by query, brand, price range and sort.
+  - **Search and filtering** — server‑side `/api/products/search` (rate‑limited) via Elastic Cloud when configured, with in‑memory catalog fallback; filters by query, brand, price range and sort.
   - **PDP (product detail page)** — `/products/[slug]` with related‑product cross‑sell and inventory state.
 - **Cart and Checkout**
   - **Cart** — React Context backed by `localStorage`, with `clampAddQuantity()` to respect per‑SKU stock.
@@ -417,7 +417,9 @@ src/
 │   ├── product-filters.ts    URL ↔ filter mapping, sort helpers
 │   ├── product-image.ts      catalog imagery resolution
 │   ├── rate-limit.ts         in‑memory bucket rate limiter
-│   ├── search-index.ts       indexed catalog search
+│   ├── search.ts             search facade (Elastic + memory fallback)
+│   ├── search-index.ts       in‑memory catalog search (fallback)
+│   ├── elasticsearch/        Elastic Cloud client, mapping, query
 │   └── stripe.ts             lazy Stripe SDK client
 ├── middleware.ts             NextAuth‑aware route protection
 ├── providers/QueryProvider   TanStack Query client provider
@@ -481,7 +483,7 @@ Authenticated request to /account
 User types in /search
    │
    ▼
-SearchClient (use-debounce 200 ms)
+SearchClient (use-debounce 300 ms) + useProductSearch (React Query)
    │
    ├── URL sync (router.replace) — keeps deep links shareable
    │
@@ -489,14 +491,15 @@ SearchClient (use-debounce 200 ms)
 GET /api/products/search?q=&brands=&min=&max=&sort=
    │
    ├── rateLimit("search:" + ip, 120 / 60s)
-   ├── parseFiltersFromSearchParams() — Zod‑validated
+   ├── parseFiltersFromSearchParams()
    ▼
-searchCatalog(products, filters)   ◄── cached CatalogIndex with brand counts
-   │
+searchProducts(filters)   ◄── Elastic Cloud when env set, else in-memory CatalogIndex
+   │                          (falls back to memory on ES errors)
    ▼
-{ products, total, tookMs }   (Cache-Control: max-age=30, SWR=60)
+{ products, total, tookMs, source }   (Cache-Control: max-age=30, SWR=60)
 ```
 
+Optional Elastic Cloud: set `ELASTICSEARCH_CLOUD_ID` + `ELASTICSEARCH_API_KEY`, then `npm run search:index`.
 ### 6.6 Order Lifecycle
 
 ```text
