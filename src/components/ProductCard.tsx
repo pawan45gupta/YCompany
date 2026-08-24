@@ -1,9 +1,7 @@
 "use client";
 
-import AddShoppingCartOutlinedIcon from "@mui/icons-material/AddShoppingCartOutlined";
 import {
   Box,
-  Button,
   Card,
   CardActions,
   CardContent,
@@ -13,9 +11,9 @@ import {
 import { styled } from "@mui/material/styles";
 import Image from "next/image";
 import Link from "next/link";
-import { memo, useCallback } from "react";
+import { memo } from "react";
 import type { Product } from "@/types/product";
-import { useCart } from "@/context/CartContext";
+import { CartQuantityStepper } from "@/components/CartQuantityStepper";
 import { useTranslation } from "@/i18n/client";
 import { getStockStatus } from "@/lib/inventory";
 
@@ -33,13 +31,8 @@ type Props = { product: Product; priority?: boolean };
 
 function ProductCardInner({ product, priority = false }: Props) {
   const { t } = useTranslation();
-  const { add } = useCart();
   const stockStatus = getStockStatus(product);
   const outOfStock = stockStatus === "out_of_stock";
-
-  const onAdd = useCallback(() => {
-    if (!outOfStock) add(product.id, 1);
-  }, [add, outOfStock, product.id]);
 
   return (
     <StyledCard variant="outlined">
@@ -84,7 +77,11 @@ function ProductCardInner({ product, priority = false }: Props) {
             flex: 1,
             display: "flex",
             flexDirection: "column",
-            "&:last-child": { pb: 2 },
+            gap: 1,
+            px: 2.5,
+            pt: 2.5,
+            pb: 1.5,
+            "&:last-child": { pb: 1.5 },
           }}
         >
           <Typography variant="overline" color="text.secondary">
@@ -93,7 +90,6 @@ function ProductCardInner({ product, priority = false }: Props) {
           <Typography
             variant="h6"
             component="h2"
-            gutterBottom
             sx={{
               flex: 1,
               minHeight: "3.25rem",
@@ -101,11 +97,12 @@ function ProductCardInner({ product, priority = false }: Props) {
               WebkitLineClamp: 2,
               WebkitBoxOrient: "vertical",
               overflow: "hidden",
+              mt: 0.5,
             }}
           >
             {product.name}
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ pt: 0.5 }}>
             {(product.priceCents / 100).toLocaleString("en-US", {
               style: "currency",
               currency: product.currency.toUpperCase(),
@@ -113,17 +110,8 @@ function ProductCardInner({ product, priority = false }: Props) {
           </Typography>
         </CardContent>
       </Link>
-      <CardActions sx={{ p: 2, pt: 0, mt: "auto" }}>
-        <Button
-          fullWidth
-          variant="contained"
-          color="primary"
-          startIcon={<AddShoppingCartOutlinedIcon />}
-          onClick={onAdd}
-          disabled={outOfStock}
-        >
-          {outOfStock ? t("products.outOfStock") : t("products.addToCart")}
-        </Button>
+      <CardActions sx={{ px: 2.5, pb: 2.5, pt: 0, mt: "auto" }}>
+        <CartQuantityStepper productId={product.id} size="small" fullWidth />
       </CardActions>
     </StyledCard>
   );

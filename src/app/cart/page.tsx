@@ -13,11 +13,11 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  TextField,
   Typography,
 } from "@mui/material";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { CartQuantityStepper } from "@/components/CartQuantityStepper";
 import { CouponField } from "@/components/CouponField";
 import { useCart } from "@/context/CartContext";
 import { useTranslation } from "@/i18n/client";
@@ -25,7 +25,7 @@ import { computeCartTotals, formatMoney } from "@/lib/cart-totals";
 
 export default function CartPage() {
   const { t } = useTranslation();
-  const { lines, setQty, remove, clear } = useCart();
+  const { lines, remove, clear } = useCart();
   const [coupon, setCoupon] = useState("");
 
   const totals = useMemo(() => computeCartTotals(lines, coupon), [lines, coupon]);
@@ -72,19 +72,7 @@ export default function CartPage() {
                       gap: 2,
                     }}
                   >
-                    <TextField
-                      type="number"
-                      size="small"
-                      label={t("common.qty")}
-                      value={quantity}
-                      onChange={(e) =>
-                        setQty(productId, Number.parseInt(e.target.value, 10) || 0)
-                      }
-                      slotProps={{
-                        input: { inputProps: { min: 1, max: 99 } },
-                      }}
-                      sx={{ width: 100 }}
-                    />
+                    <CartQuantityStepper productId={productId} size="small" />
                     <Typography sx={{ fontWeight: 600 }}>
                       {formatMoney(lineTotalCents, product.currency.toUpperCase())}
                     </Typography>
@@ -127,20 +115,9 @@ export default function CartPage() {
                       {formatMoney(product.priceCents, product.currency.toUpperCase())}
                     </TableCell>
                     <TableCell align="center">
-                      <TextField
-                        type="number"
-                        size="small"
-                        value={quantity}
-                        onChange={(e) =>
-                          setQty(productId, Number.parseInt(e.target.value, 10) || 0)
-                        }
-                        slotProps={{
-                          input: {
-                            inputProps: { min: 1, max: 99 },
-                          },
-                        }}
-                        sx={{ width: 88 }}
-                      />
+                      <Box sx={{ display: "inline-flex", justifyContent: "center" }}>
+                        <CartQuantityStepper productId={productId} size="small" />
+                      </Box>
                     </TableCell>
                     <TableCell align="right">
                       {formatMoney(lineTotalCents, product.currency.toUpperCase())}

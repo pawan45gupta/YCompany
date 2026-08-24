@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { bootstrapAuthSiteUrl, resolveSiteUrl } from "@/lib/site-url";
+import { ensureAuthSiteUrl, resolveSiteUrl } from "@/lib/site-url";
 
 function mockRequest(headers: Record<string, string>): Request {
   return new Request("http://internal/api/checkout", { headers });
@@ -39,13 +39,12 @@ describe("resolveSiteUrl", () => {
   });
 });
 
-describe("bootstrapAuthSiteUrl", () => {
+describe("ensureAuthSiteUrl", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
   });
 
-  it("replaces localhost auth env vars in production", () => {
-    vi.stubEnv("NODE_ENV", "production");
+  it("replaces localhost auth env vars from Vercel metadata", () => {
     vi.stubEnv("AUTH_URL", "http://localhost:3000");
     vi.stubEnv("NEXTAUTH_URL", "http://localhost:3000");
     vi.stubEnv(
@@ -53,7 +52,21 @@ describe("bootstrapAuthSiteUrl", () => {
       "y-company-virid.vercel.app",
     );
 
-    bootstrapAuthSiteUrl();
+    ensureAuthSiteUrl();
+
+    expect(process.env.AUTH_URL).toBe("https://y-company-virid.vercel.app");
+    expect(process.env.NEXTAUTH_URL).toBe("https://y-company-virid.vercel.app");
+  });
+
+  it("prefers the incoming request host over localhost env", () => {
+    vi.stubEnv("AUTH_URL", "http://localhost:3000");
+    vi.stubEnv("NEXTAUTH_URL", "http://localhost:3000");
+    const req = mockRequest({
+      "x-forwarded-proto": "https",
+      "x-forwarded-host": "y-company-virid.vercel.app",
+    });
+
+    ensureAuthSiteUrl(req);
 
     expect(process.env.AUTH_URL).toBe("https://y-company-virid.vercel.app");
     expect(process.env.NEXTAUTH_URL).toBe("https://y-company-virid.vercel.app");

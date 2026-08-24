@@ -12,6 +12,7 @@
     "search": "Search",
     "cart": "Cart",
     "catalog": "Catalog",
+    "aboutUs": "About us",
     "signIn": "Sign in",
     "signUp": "Sign up",
     "signOut": "Sign out",
@@ -58,10 +59,22 @@
     "cartWithCount": "Cart ({count})",
     "openMenu": "Open menu",
     "cartAria": "Cart",
-    "searchAria": "Search"
+    "searchAria": "Search",
+    "searchNoMatches": "No matching products"
   },
   "footer": {
     "copyright": "© {year} YCompany. Luxury apparel crafted for countryside and city."
+  },
+  "about": {
+    "title": "About us",
+    "metaDescription": "Learn about YCompany—heritage countryside fashion, quality materials, and a modern boutique experience built for every landscape.",
+    "intro": "YCompany brings together countryside heritage and modern style in a curated collection of luxury apparel, shoes, and accessories.",
+    "heritageTitle": "Our heritage",
+    "heritageBody": "Founded on the belief that great clothing should feel at home in the field and the city, YCompany is known for sweaters, moleskin, corduroy, and tattersall shirts—pieces shaped by tradition and refined for today.",
+    "craftTitle": "Materials & craft",
+    "craftBody": "We work with trusted mills and makers to source durable fabrics and thoughtful details. Every garment is chosen for comfort, longevity, and the kind of quiet quality that wears in, not out.",
+    "promiseTitle": "Our promise",
+    "promiseBody": "From instant search and live inventory to secure checkout, our boutique is designed to be fast, responsive, and transparent—so you can shop with confidence, whether you are dressing for a country weekend or a weekday in town."
   },
   "home": {
     "newSeason": "Heritage & modern",
@@ -90,7 +103,7 @@
   "search": {
     "title": "Search",
     "metaDescription": "Fast product search across YCompany sweaters, moleskin, corduroy, tattersall, and full catalog.",
-    "intro": "Instant results as you type—filter by price and brand. Shareable URLs keep your search and filters in sync across devices.",
+    "intro": "Instant results as you type—filter by price and brand.",
     "placeholder": "Search apparel, brands, categories…",
     "clearSearchAria": "Clear search",
     "filters": "Filters",
@@ -106,6 +119,7 @@
     "noMatches": "No matches",
     "noMatchesBody": "Try a different search term or loosen your filters.",
     "resetSearch": "Reset search",
+    "loading": "Updating results…",
     "sort": {
       "relevance": "Relevance",
       "priceAsc": "Price: low to high",
@@ -121,6 +135,9 @@
     "product": "Product",
     "line": "Line",
     "removeAria": "Remove item",
+    "decreaseQtyAria": "Decrease quantity",
+    "increaseQtyAria": "Increase quantity",
+    "quantityAria": "Quantity for {name}",
     "proceedCheckout": "Proceed to checkout",
     "clearCart": "Clear cart"
   },
@@ -146,6 +163,14 @@
     "submitting": "Signing in…",
     "invalidCredentials": "Invalid email or password",
     "oauthError": "Sign-in was cancelled or failed. Please try again.",
+    "authErrors": {
+      "configuration": "Sign-in is misconfigured for this site. Check AUTH_URL and Google redirect URIs, then redeploy.",
+      "oauthCallback": "Google sign-in could not be completed. Confirm the redirect URI is registered in Google Cloud Console.",
+      "oauthSignin": "Could not start Google sign-in. Please try again.",
+      "accessDenied": "Access was denied. Try another account or contact support.",
+      "verification": "That sign-in link expired. Please try again.",
+      "missingCsrf": "Your session expired. Refresh the page and try again."
+    },
     "continueWithEmail": "Or continue with email",
     "continueWith": "Continue with {provider}",
     "socialHint": "Quick sign-in with your existing account",
@@ -290,6 +315,28 @@
   },
   "userMenu": {
     "accountMenuAria": "Account menu"
+  },
+  "email": {
+    "welcome": {
+      "subject": "Welcome to YCompany",
+      "title": "Welcome{namePart}!",
+      "intro": "Thanks for creating your YCompany account.",
+      "body": "Explore luxury sweaters, moleskin, corduroy, and countryside classics with instant search, live inventory, and secure checkout.",
+      "cta": "Start shopping"
+    },
+    "orderConfirmation": {
+      "subject": "Order confirmed — {orderId}",
+      "title": "Your order is confirmed",
+      "intro": "We received your order {orderId}. Total charged: {total}.",
+      "cta": "View your orders"
+    },
+    "orderCancellation": {
+      "subject": "Order cancelled — {orderId}",
+      "title": "Your order was cancelled",
+      "intro": "Order {orderId} has been cancelled. The original total was {total}.",
+      "body": "If a payment had already been captured, any refund timing depends on your bank or card issuer.",
+      "cta": "Continue shopping"
+    }
   },
   "api": {
     "unauthorized": "Unauthorized",

@@ -20,16 +20,17 @@ describe("ProductCard", () => {
     );
   });
 
-  it("adds to cart when button clicked", async () => {
+  it("adds to cart when plus is clicked", async () => {
     const user = userEvent.setup();
     renderWithProviders(<ProductCard product={mockProduct} />);
-    await user.click(screen.getByRole("button", { name: /add to cart/i }));
+    await user.click(screen.getByRole("button", { name: /increase quantity/i }));
     expect(localStorage.getItem("ycompany-cart")).toContain(mockProduct.id);
   });
 
   it("shows out of stock state", () => {
     renderWithProviders(<ProductCard product={outOfStockProduct} />);
-    expect(screen.getByRole("button", { name: /out of stock/i })).toBeDisabled();
+    expect(screen.getAllByText(/out of stock/i).length).toBeGreaterThan(0);
+    expect(screen.queryByRole("button", { name: /increase quantity/i })).not.toBeInTheDocument();
   });
 
   it("shows low stock chip", () => {

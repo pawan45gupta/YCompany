@@ -1,7 +1,10 @@
 import { auth } from "@/auth";
+import { ensureAuthSiteUrl } from "@/lib/site-url";
 import { NextResponse } from "next/server";
 
-export default auth((req) => {
+export const proxy = auth((req) => {
+  ensureAuthSiteUrl(req);
+
   if (req.nextUrl.pathname.startsWith("/account") && !req.auth) {
     const url = new URL("/login", req.nextUrl.origin);
     url.searchParams.set("callbackUrl", req.nextUrl.pathname);

@@ -1,7 +1,5 @@
 "use client";
 
-import ClearIcon from "@mui/icons-material/Clear";
-import SearchIcon from "@mui/icons-material/Search";
 import TuneIcon from "@mui/icons-material/Tune";
 import {
   Box,
@@ -13,27 +11,27 @@ import {
   FormControl,
   FormControlLabel,
   FormGroup,
-  IconButton,
-  InputAdornment,
   InputLabel,
   MenuItem,
   Paper,
   Select,
   Slider,
   Stack,
-  TextField,
   Typography,
 } from "@mui/material";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AppLoader } from "@/components/AppLoader";
 import { ProductCard } from "@/components/ProductCard";
+import { ProductSearchAutocomplete } from "@/components/ProductSearchAutocomplete";
+import { products } from "@/data/products";
 import { useProductSearch } from "@/hooks/api/use-product-search";
 import { useTranslation } from "@/i18n/client";
 import {
   buildSearchQueryString,
   countActiveFilters,
   formatPrice,
-  getBrandProductCounts,
+  getBrandFacetCounts,
   getCatalogBrands,
   getCatalogPriceBounds,
   parseFiltersFromSearchParams,
@@ -53,23 +51,23 @@ const SORT_KEYS: Record<ProductSort, string> = {
 
 const brands = getCatalogBrands();
 const priceBounds = getCatalogPriceBounds();
-const brandCounts = getBrandProductCounts();
 
 function SearchResultsBody({
   isPending,
+  isResultsLoading,
   results,
-  isSearchStale,
   onClearAll,
 }: {
   isPending: boolean;
+  isResultsLoading: boolean;
   results: Product[];
-  isSearchStale: boolean;
   onClearAll: () => void;
 }) {
   const { t } = useTranslation();
+  const loadingLabel = t("search.loading");
 
-  if (isPending && results.length === 0) {
-    return <Typography color="text.secondary">{t("common.loading")}</Typography>;
+  if ((isPending || isResultsLoading) && results.length === 0) {
+    return <AppLoader label={loadingLabel} minHeight="32vh" />;
   }
 
   if (results.length === 0) {
@@ -88,14 +86,16 @@ function SearchResultsBody({
     );
   }
 
+  if (isResultsLoading) {
+    return <AppLoader label={loadingLabel} minHeight="32vh" />;
+  }
+
   return (
     <Box
       sx={{
         display: "grid",
         gap: 3,
         gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-        opacity: isSearchStale ? 0.72 : 1,
-        transition: "opacity 0.15s ease",
       }}
     >
       {results.map((p) => (
@@ -108,6 +108,7 @@ function SearchResultsBody({
 function FiltersPanel({
   filters,
   priceRange,
+  brandCounts,
   onBrandToggle,
   onPriceDraft,
   onPriceCommit,
@@ -115,6 +116,7 @@ function FiltersPanel({
 }: {
   filters: ProductFilters;
   priceRange: [number, number];
+  brandCounts: Readonly<Record<string, number>>;
   onBrandToggle: (brand: string) => void;
   onPriceDraft: (range: [number, number]) => void;
   onPriceCommit: (range: [number, number]) => void;
@@ -173,32 +175,51 @@ function FiltersPanel({
         {t("search.brand")}
       </Typography>
       <FormGroup>
-        {brands.map((brand) => (
-          <FormControlLabel
-            key={brand}
-            control={
-              <Checkbox
-                size="small"
-                checked={filters.brands?.includes(brand) ?? false}
-                onChange={() => onBrandToggle(brand)}
-              />
-            }
-            label={
-              <Typography variant="body2">
-                {brand}
-                <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 0.75 }}>
-                  ({brandCounts[brand] ?? 0})
+        {brands.map((brand) => {
+          const count = brandCounts[brand] ?? 0;
+          const checked = filters.brands?.includes(brand) ?? false;
+          const disabled = count === 0 && !checked;
+
+          return (
+            <FormControlLabel
+              key={brand}
+              control={
+                <Checkbox
+                  size="small"
+                  checked={checked}
+                  disabled={disabled}
+                  onChange={() => onBrandToggle(brand)}
+                />
+              }
+              label={
+                <Typography
+                  variant="body2"
+                  color={disabled ? "text.disabled" : "text.primary"}
+                >
+                  {brand}
+                  <Typography
+                    component="span"
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ ml: 0.75 }}
+                  >
+                    ({count})
+                  </Typography>
                 </Typography>
-              </Typography>
-            }
-          />
-        ))}
+              }
+            />
+          );
+        })}
       </FormGroup>
     </Paper>
   );
 }
 
 export function SearchClient() {
+  return <SearchClientInner />;
+}
+
+function SearchClientInner() {
   const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -224,17 +245,22 @@ export function SearchClient() {
     [searchParams],
   );
 
-  const [queryInput, setQueryInput] = useState(filters.query ?? "");
-  const [lastUrlQuery, setLastUrlQuery] = useState(filters.query ?? "");
+  const [queryInput, setQueryInput] = useState(() => filters.query ?? "");
   const debouncedQuery = useDebounce(queryInput, 300);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [priceDraft, setPriceDraft] = useState<[number, number] | null>(null);
+  const filtersRef = useRef(filters);
+  const inputFocusedRef = useRef(false);
 
-  const urlQuery = filters.query ?? "";
-  if (urlQuery !== lastUrlQuery) {
-    setLastUrlQuery(urlQuery);
-    setQueryInput(urlQuery);
-  }
+  useEffect(() => {
+    filtersRef.current = filters;
+  }, [filters]);
+
+  useEffect(() => {
+    if (!inputFocusedRef.current) {
+      setQueryInput(filters.query ?? "");
+    }
+  }, [filters.query]);
 
   const pushFilters = useCallback(
     (next: ProductFilters) => {
@@ -243,16 +269,28 @@ export function SearchClient() {
     [router],
   );
 
+  const pushFiltersWithInputQuery = useCallback(
+    (next: ProductFilters) => {
+      pushFilters({
+        ...next,
+        query: next.query ?? (queryInput.trim() || undefined),
+      });
+    },
+    [pushFilters, queryInput],
+  );
+
+  // Debounce text input → URL. Omit `filters` from deps so filter changes cannot
+  // re-push a stale debounced query after clear or a second search.
   useEffect(() => {
     const trimmed = debouncedQuery.trim();
-    const urlQuery = searchParams.get("q")?.trim() ?? "";
+    const urlQuery = filtersRef.current.query ?? "";
     if (trimmed === urlQuery) return;
     if (trimmed) trackSearch(trimmed);
     pushFilters({
-      ...filters,
+      ...filtersRef.current,
       query: trimmed || undefined,
     });
-  }, [debouncedQuery, filters, pushFilters, searchParams]);
+  }, [debouncedQuery, pushFilters]);
 
   const priceRange: [number, number] = useMemo(
     () => [
@@ -264,52 +302,93 @@ export function SearchClient() {
 
   const displayPriceRange = priceDraft ?? priceRange;
 
-  const searchFilters = useMemo(
-    () => ({
-      ...filters,
-      query: debouncedQuery.trim() || undefined,
-    }),
-    [filters, debouncedQuery],
-  );
+  const brandFacetCounts = useMemo(() => {
+    const query = filters.query ?? (queryInput.trim() || undefined);
+    return getBrandFacetCounts(products, {
+      query,
+      minPriceCents:
+        displayPriceRange[0] > priceBounds.min ? displayPriceRange[0] : undefined,
+      maxPriceCents:
+        displayPriceRange[1] < priceBounds.max ? displayPriceRange[1] : undefined,
+    });
+  }, [displayPriceRange, filters.query, queryInput]);
 
   const {
     products: results,
     isFetching,
     isPending,
     isPlaceholderData,
-  } = useProductSearch(searchFilters);
-  const isSearchStale = isFetching || isPlaceholderData;
+  } = useProductSearch(filters);
+
+  const isResultsLoading = isFetching || isPlaceholderData;
 
   const updateQuery = (value: string) => {
     setQueryInput(value);
   };
+
+  const submitQuery = useCallback(
+    (query: string) => {
+      const trimmed = query.trim();
+      if (trimmed) trackSearch(trimmed);
+      pushFilters({
+        ...filtersRef.current,
+        query: trimmed || undefined,
+      });
+    },
+    [pushFilters],
+  );
+
+  const selectProduct = useCallback(
+    (product: Product) => {
+      trackSearch(product.name);
+      setQueryInput(product.name);
+      pushFilters({
+        ...filtersRef.current,
+        query: product.name,
+      });
+    },
+    [pushFilters],
+  );
 
   const toggleBrand = (brand: string) => {
     const current = filters.brands ?? [];
     const next = current.includes(brand)
       ? current.filter((b) => b !== brand)
       : [...current, brand];
-    pushFilters({
+    pushFiltersWithInputQuery({
       ...filters,
       brands: next.length ? next : undefined,
     });
   };
 
   const setPriceRange = (range: [number, number]) => {
-    pushFilters({
+    const next: ProductFilters = {
       ...filters,
       minPriceCents: range[0] > priceBounds.min ? range[0] : undefined,
       maxPriceCents: range[1] < priceBounds.max ? range[1] : undefined,
+    };
+    const facets = getBrandFacetCounts(products, {
+      ...next,
+      query: queryInput.trim() || undefined,
+    });
+    const activeBrands = filters.brands?.filter((brand) => (facets[brand] ?? 0) > 0);
+
+    pushFiltersWithInputQuery({
+      ...next,
+      brands: activeBrands?.length ? activeBrands : undefined,
     });
   };
 
+  const clearQuery = () => {
+    pushFilters({ ...filters, query: undefined });
+  };
+
   const clearFilters = () => {
-    pushFilters({ query: filters.query });
+    pushFiltersWithInputQuery({});
   };
 
   const clearAll = () => {
-    setQueryInput("");
-    router.replace("/search");
+    pushFilters({});
   };
 
   const activeFilterCount = countActiveFilters(filters);
@@ -317,12 +396,9 @@ export function SearchClient() {
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-      <Typography variant="h1" sx={{ fontSize: "2rem", mb: 1 }}>
+      {/* <Typography variant="h1" sx={{ fontSize: "2rem", mb: 1 }}>
         {t("search.title")}
-      </Typography>
-      <Typography color="text.secondary" sx={{ mb: 3, maxWidth: 560 }}>
-        {t("search.intro")}
-      </Typography>
+      </Typography> */}
 
       <Paper
         variant="outlined"
@@ -332,45 +408,39 @@ export function SearchClient() {
           borderRadius: 2,
         }}
       >
-        <TextField
-          fullWidth
-          size="medium"
-          placeholder={t("search.placeholder")}
-          value={queryInput}
-          onChange={(e) => updateQuery(e.target.value)}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon color="action" />
-                </InputAdornment>
-              ),
-              endAdornment: queryInput ? (
-                <InputAdornment position="end">
-                  <IconButton
-                    size="small"
-                    aria-label={t("search.clearSearchAria")}
-                    onClick={() => updateQuery("")}
-                  >
-                    <ClearIcon fontSize="small" />
-                  </IconButton>
-                </InputAdornment>
-              ) : null,
-            },
+        <Box
+          component="form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            submitQuery(queryInput);
           }}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              borderRadius: 999,
-              bgcolor: "background.paper",
-              minHeight: 56,
-              alignItems: "center",
-            },
-            "& .MuiOutlinedInput-input": {
-              py: 1.75,
-              fontSize: "1.0625rem",
-            },
-          }}
-        />
+        >
+          <ProductSearchAutocomplete
+            value={queryInput}
+            onChange={updateQuery}
+            onProductSelect={selectProduct}
+            onClear={clearQuery}
+            placeholder={t("search.placeholder")}
+            onFocus={() => {
+              inputFocusedRef.current = true;
+            }}
+            onBlur={() => {
+              inputFocusedRef.current = false;
+            }}
+            inputSx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 999,
+                bgcolor: "background.paper",
+                minHeight: 56,
+                alignItems: "center",
+              },
+              "& .MuiOutlinedInput-input": {
+                py: 1.75,
+                fontSize: "1.0625rem",
+              },
+            }}
+          />
+        </Box>
 
         {(filters.brands?.length || activeFilterCount > 0) && (
           <Stack sx={{ mt: 2, flexDirection: "row", flexWrap: "wrap", gap: 1 }}>
@@ -387,7 +457,7 @@ export function SearchClient() {
                 label={`${formatPrice(priceRange[0])} – ${formatPrice(priceRange[1])}`}
                 size="small"
                 onDelete={() =>
-                  pushFilters({
+                  pushFiltersWithInputQuery({
                     ...filters,
                     minPriceCents: undefined,
                     maxPriceCents: undefined,
@@ -428,6 +498,7 @@ export function SearchClient() {
           <FiltersPanel
             filters={filters}
             priceRange={displayPriceRange}
+            brandCounts={brandFacetCounts}
             onBrandToggle={toggleBrand}
             onPriceDraft={setPriceDraft}
             onPriceCommit={(range) => {
@@ -452,8 +523,13 @@ export function SearchClient() {
               {results.length === 1
                 ? t("search.results", { count: results.length })
                 : t("search.resultsPlural", { count: results.length })}
-              {queryInput.trim() ? (
-                <> {t("search.resultsFor", { query: queryInput.trim() })}</>
+              {(filters.query ?? queryInput.trim()) ? (
+                <>
+                  {" "}
+                  {t("search.resultsFor", {
+                    query: filters.query ?? queryInput.trim(),
+                  })}
+                </>
               ) : null}
             </Typography>
             <FormControl size="small" sx={{ minWidth: 200 }}>
@@ -463,7 +539,7 @@ export function SearchClient() {
                 label={t("search.sortBy")}
                 value={sortValue}
                 onChange={(e) =>
-                  pushFilters({
+                  pushFiltersWithInputQuery({
                     ...filters,
                     sort: e.target.value === "relevance" ? undefined : (e.target.value as ProductSort),
                   })
@@ -480,8 +556,8 @@ export function SearchClient() {
 
           <SearchResultsBody
             isPending={isPending}
+            isResultsLoading={isResultsLoading}
             results={results}
-            isSearchStale={isSearchStale}
             onClearAll={clearAll}
           />
         </Box>

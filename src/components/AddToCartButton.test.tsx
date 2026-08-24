@@ -8,13 +8,13 @@ describe("AddToCartButton", () => {
   it("adds product to cart on click", async () => {
     const user = userEvent.setup();
     renderWithProviders(<AddToCartButton productId="p1" />);
-    await user.click(screen.getByRole("button", { name: /add to cart/i }));
+    await user.click(screen.getByRole("button", { name: /increase quantity/i }));
     expect(localStorage.getItem("ycompany-cart")).toContain("p1");
   });
 
   it("is disabled for unknown product", () => {
     renderWithProviders(<AddToCartButton productId="missing-id" />);
-    expect(screen.getByRole("button")).toBeDisabled();
-    expect(screen.getByRole("button", { name: /out of stock/i })).toBeInTheDocument();
+    expect(screen.getByText(/out of stock/i)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /increase quantity/i })).not.toBeInTheDocument();
   });
 });

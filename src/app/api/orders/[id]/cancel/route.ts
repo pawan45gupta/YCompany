@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { sendOrderCancellationEmail } from "@/lib/email/notifications";
 import { apiMessage } from "@/i18n/api";
 import { nrRecordEvent } from "@/lib/observability/newrelic-server";
 import { cancelOrder } from "@/lib/orders/service";
@@ -29,5 +30,6 @@ export async function POST(_req: Request, { params }: Params) {
     total_cents: result.order.totalCents,
     currency: result.order.currency,
   });
+  void sendOrderCancellationEmail(result.order);
   return NextResponse.json({ order: result.order });
 }

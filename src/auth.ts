@@ -1,14 +1,13 @@
 import NextAuth from "next-auth";
+import type { NextAuthConfig } from "next-auth";
 import { buildAuthProviders } from "@/lib/auth-providers";
-import { bootstrapAuthSiteUrl } from "@/lib/site-url";
+import { ensureAuthSiteUrl } from "@/lib/site-url";
 
-bootstrapAuthSiteUrl();
-
-export const { handlers, auth, signIn, signOut } = NextAuth({
+const authConfig: NextAuthConfig = {
   trustHost: true,
   providers: buildAuthProviders(),
   session: { strategy: "jwt", maxAge: 60 * 60 * 24 * 7 },
-  pages: { signIn: "/login" },
+  pages: { signIn: "/login", error: "/login" },
   callbacks: {
     jwt({ token, user }) {
       if (user) {
@@ -29,4 +28,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
   },
-});
+};
+
+ensureAuthSiteUrl();
+
+export const { handlers, auth, signIn, signOut } = NextAuth(authConfig);

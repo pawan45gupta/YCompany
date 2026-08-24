@@ -4,6 +4,7 @@ import {
   buildLinesFromMetadata,
   createOrderFromCheckout,
 } from "@/lib/orders/service";
+import { sendOrderConfirmationEmail } from "@/lib/email/notifications";
 import { nrRecordEvent } from "@/lib/observability/newrelic-server";
 import { getStripe } from "@/lib/stripe";
 
@@ -45,7 +46,7 @@ export async function POST(req: Request) {
           (s, l) => s + l.unitPriceCents * l.quantity,
           0,
         );
-        createOrderFromCheckout({
+        const { order, created } = createOrderFromCheckout({
           userId,
           customerEmail: email,
           stripeSessionId: checkout.id,
@@ -56,6 +57,9 @@ export async function POST(req: Request) {
           totalCents: checkout.amount_total ?? subtotalCents,
           currency: checkout.currency ?? "usd",
         });
+        if (created) {
+          void sendOrderConfirmationEmail(order);
+        }
         // Authoritative Purchase event: GA4 also fires Purchase from the
         // checkout-success page, but the webhook fires once per *paid*
         // session — making this the only signal that's robust against the

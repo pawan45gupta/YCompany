@@ -5,6 +5,7 @@ import {
   buildLinesFromMetadata,
   createOrderFromCheckout,
 } from "@/lib/orders/service";
+import { sendOrderConfirmationEmail } from "@/lib/email/notifications";
 import { getStripe } from "@/lib/stripe";
 import { apiMessage } from "@/i18n/api";
 
@@ -59,7 +60,7 @@ export async function POST(req: Request) {
     const totalCents = checkout.amount_total ?? subtotalCents;
     const discountCents = Math.max(0, subtotalCents - totalCents);
 
-    const order = createOrderFromCheckout({
+    const { order, created } = createOrderFromCheckout({
       userId: session.user.id,
       customerEmail: session.user.email,
       stripeSessionId: sessionId,
@@ -70,6 +71,10 @@ export async function POST(req: Request) {
       totalCents,
       currency: checkout.currency ?? "usd",
     });
+
+    if (created) {
+      void sendOrderConfirmationEmail(order);
+    }
 
     return NextResponse.json({ order });
   } catch (err) {

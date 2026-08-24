@@ -24,6 +24,20 @@ export function getBrandProductCounts(
   return getCatalogIndex(items).brandCounts;
 }
 
+/** Brand counts for the current query/price context (ignores selected brands). */
+export function getBrandFacetCounts(
+  items: readonly Product[],
+  filters: ProductFilters,
+): Readonly<Record<string, number>> {
+  const { brands: _brands, ...facetFilters } = filters;
+  const matching = searchCatalog(items, facetFilters);
+  const counts: Record<string, number> = {};
+  for (const product of matching) {
+    counts[product.brand] = (counts[product.brand] ?? 0) + 1;
+  }
+  return counts;
+}
+
 export function sortProducts(
   items: Product[],
   sort: ProductSort,

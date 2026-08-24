@@ -98,20 +98,22 @@ export default function HomePage() {
         </Container>
       </Box>
       <Container maxWidth="lg" sx={{ py: { xs: 6, md: 8 } }}>
-        <Typography variant="h4" component="h2" gutterBottom>
-          {t("home.featured")}
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 640 }}>
-          {t("home.featuredBody")}
-        </Typography>
+        <Stack spacing={{ xs: 1.5, md: 2 }} sx={{ mb: { xs: 4, md: 6 } }}>
+          <Typography variant="h4" component="h2">
+            {t("home.featured")}
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 640 }}>
+            {t("home.featuredBody")}
+          </Typography>
+        </Stack>
         <Box
           sx={{
             display: "grid",
-            gap: 3,
+            gap: { xs: 3, sm: 3.5, md: 4 },
             gridTemplateColumns: {
               xs: "1fr",
-              sm: "repeat(2, 1fr)",
-              md: "repeat(3, 1fr)",
+              sm: "repeat(2, minmax(0, 1fr))",
+              md: "repeat(3, minmax(0, 1fr))",
             },
           }}
         >

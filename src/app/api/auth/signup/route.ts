@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { parseSignupBody } from "@/lib/env";
+import { sendWelcomeEmail } from "@/lib/email/notifications";
 import {
   nrRecordEvent,
   nrSetUserId,
@@ -77,5 +78,6 @@ export async function POST(req: Request) {
     email_domain: parsed.email.split("@")[1] ?? "unknown",
     has_name: Boolean(result.user.name),
   });
+  void sendWelcomeEmail({ email: result.user.email, name: result.user.name });
   return NextResponse.json({ user: result.user }, { status: 201 });
 }

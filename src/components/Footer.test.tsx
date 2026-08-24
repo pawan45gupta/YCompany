@@ -10,15 +10,15 @@ describe("Footer", () => {
     expect(screen.getByText(/YCompany/i)).toBeInTheDocument();
   });
 
-  it("renders catalog and search links", () => {
+  it("renders catalog and about us links", () => {
     renderWithProviders(<Footer />);
     expect(screen.getByRole("link", { name: /catalog/i })).toHaveAttribute(
       "href",
       "/products",
     );
-    expect(screen.getByRole("link", { name: /search/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /about us/i })).toHaveAttribute(
       "href",
-      "/search",
+      "/about",
     );
   });
 

@@ -94,11 +94,9 @@ export function resolveSiteUrl(request?: Request): string {
   return "http://localhost:3000";
 }
 
-/** Override localhost AUTH_URL/NEXTAUTH_URL on Vercel when env still points at dev. */
-export function bootstrapAuthSiteUrl(): void {
-  if (process.env.NODE_ENV !== "production") return;
-
-  const resolved = resolveSiteUrl();
+/** Sync AUTH_URL/NEXTAUTH_URL before Auth.js rewrites the request host. */
+export function ensureAuthSiteUrl(request?: Request): void {
+  const resolved = resolveSiteUrl(request);
   if (isLocalhostUrl(resolved)) return;
 
   if (!process.env.AUTH_URL || isLocalhostUrl(process.env.AUTH_URL)) {
@@ -108,3 +106,6 @@ export function bootstrapAuthSiteUrl(): void {
     process.env.NEXTAUTH_URL = resolved;
   }
 }
+
+/** @deprecated Use ensureAuthSiteUrl */
+export const bootstrapAuthSiteUrl = ensureAuthSiteUrl;

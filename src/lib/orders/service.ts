@@ -75,10 +75,11 @@ export function createOrderFromCheckout(input: {
   discountCents: number;
   totalCents: number;
   currency: string;
-}): Order {
+}): { order: Order; created: boolean } {
   const orders = loadOrders();
-  if (orders.some((o) => o.stripeSessionId === input.stripeSessionId)) {
-    return orders.find((o) => o.stripeSessionId === input.stripeSessionId)!;
+  const existing = orders.find((o) => o.stripeSessionId === input.stripeSessionId);
+  if (existing) {
+    return { order: existing, created: false };
   }
 
   const order: Order = {
@@ -97,7 +98,7 @@ export function createOrderFromCheckout(input: {
   };
   orders.push(order);
   saveOrders(orders);
-  return order;
+  return { order, created: true };
 }
 
 export function buildLinesFromMetadata(

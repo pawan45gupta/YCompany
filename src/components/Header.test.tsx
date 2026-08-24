@@ -28,7 +28,7 @@ describe("Header", () => {
     const user = userEvent.setup();
     renderWithProviders(<Header />);
 
-    const input = screen.getByRole("textbox");
+    const input = screen.getByRole("combobox");
     await user.type(input, "sweater");
     await user.keyboard("{Enter}");
 
@@ -39,7 +39,7 @@ describe("Header", () => {
     const user = userEvent.setup();
     renderWithProviders(<Header />);
 
-    await user.click(screen.getByLabelText(/search/i));
+    await user.click(screen.getByRole("button", { name: /^search$/i }));
     expect(mockPush).toHaveBeenCalledWith("/search");
   });
 

@@ -59,13 +59,13 @@ export function Footer() {
             </MuiLink>
             <MuiLink
               component={Link}
-              href="/search"
+              href="/about"
               color="inherit"
               variant="body2"
               underline="hover"
               sx={footerLinkSx}
             >
-              {t("common.search")}
+              {t("common.aboutUs")}
             </MuiLink>
           </Box>
         </Box>

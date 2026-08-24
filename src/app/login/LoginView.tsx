@@ -18,6 +18,7 @@ import { Suspense, useState } from "react";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { SocialSignInButtons } from "@/components/auth/SocialSignInButtons";
 import type { OAuthProviderId } from "@/lib/auth-providers";
+import { getAuthErrorMessageKey } from "@/lib/auth-errors";
 import { getSafeCallbackUrl } from "@/lib/auth-redirect";
 import { trackLogin } from "@/lib/observability/analytics";
 import { useTranslation } from "@/i18n/client";
@@ -81,7 +82,7 @@ function LoginForm({ oauthProviders }: Props) {
     >
       {(authError || error) && (
         <Alert severity="error" sx={{ width: "100%" }}>
-          {error ?? t("login.oauthError")}
+          {error ?? t(getAuthErrorMessageKey(authError))}
         </Alert>
       )}
 
