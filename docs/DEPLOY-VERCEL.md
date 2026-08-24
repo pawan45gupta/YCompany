@@ -136,7 +136,8 @@ Also set `AUTH_SECRET`, `AUTH_URL`, and `NEXTAUTH_URL` to your `https://….verc
 | Issue | Fix |
 |-------|-----|
 | Build fails on `AUTH_SECRET` | Add all required env vars before build |
-| Sign-in redirects to localhost | Set `AUTH_URL` / `NEXTAUTH_URL` to the Vercel URL |
+| Sign-in or checkout redirects to `localhost:3000` | Set `AUTH_URL`, `NEXTAUTH_URL`, and `NEXT_PUBLIC_SITE_URL` to `https://y-company-virid.vercel.app` (or your custom domain), then **Redeploy**. The app also infers the URL from Vercel/request headers when env still points at localhost, but explicit env vars are recommended. |
+| Google OAuth fails or wrong redirect | In [Google Cloud Console](https://console.cloud.google.com/apis/credentials) → your OAuth client → **Authorized redirect URIs**, add `https://y-company-virid.vercel.app/api/auth/callback/google` (keep `http://localhost:3000/...` for local dev). |
 | Images 500 on Vercel | Unlikely on Vercel; locally set `IMAGE_UNOPTIMIZED=true` |
 | Sentry build warnings | Add `SENTRY_AUTH_TOKEN` or leave DSN-only (source maps disabled) |
 

@@ -6,6 +6,7 @@ import { Header } from "@/components/Header";
 import { GoogleAnalyticsProvider } from "@/components/observability/GoogleAnalytics";
 import { NewRelicBrowser } from "@/components/observability/NewRelicBrowser";
 import { getTranslations } from "@/i18n/server";
+import { resolveSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 
 const { dict } = getTranslations();
@@ -20,8 +21,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const siteUrl = resolveSiteUrl();
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

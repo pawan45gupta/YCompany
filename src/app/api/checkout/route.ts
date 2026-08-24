@@ -7,17 +7,10 @@ import { isStripeConfigured, parseCheckoutBody } from "@/lib/env";
 import { nrRecordEvent } from "@/lib/observability/newrelic-server";
 import { rateLimit } from "@/lib/rate-limit";
 import { apiMessage } from "@/i18n/api";
+import { resolveSiteUrl } from "@/lib/site-url";
 import { getStripe } from "@/lib/stripe";
 
 const SHIPPING_CENTS = 599;
-
-function getBaseUrl(): string {
-  return (
-    process.env.AUTH_URL ??
-    process.env.NEXTAUTH_URL ??
-    "http://localhost:3000"
-  );
-}
 
 export async function POST(req: Request) {
   const ip =
@@ -163,8 +156,8 @@ export async function POST(req: Request) {
           },
         },
       ],
-      success_url: `${getBaseUrl()}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${getBaseUrl()}/cart`,
+      success_url: `${resolveSiteUrl(req)}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${resolveSiteUrl(req)}/cart`,
       automatic_tax: { enabled: false },
       metadata: {
         coupon: parsed.couponCode?.trim() ?? "",

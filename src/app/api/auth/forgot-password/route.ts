@@ -8,6 +8,7 @@ import {
   issueResetToken,
 } from "@/lib/auth/password-reset";
 import { apiMessage } from "@/i18n/api";
+import { resolveSiteUrl } from "@/lib/site-url";
 
 // Tighter than signup — issuing reset tokens is more sensitive (emails out,
 // invalidates prior tokens). 5 per IP per minute leaves room for retries
@@ -20,14 +21,6 @@ function clientIp(req: Request): string {
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     req.headers.get("x-real-ip") ??
     "local"
-  );
-}
-
-function getBaseUrl(req: Request): string {
-  return (
-    process.env.AUTH_URL ??
-    process.env.NEXTAUTH_URL ??
-    new URL(req.url).origin
   );
 }
 
@@ -67,7 +60,7 @@ export async function POST(req: Request) {
   });
   if (user) {
     const { token, expiresAt } = issueResetToken(user.id);
-    const resetUrl = buildResetUrl(token, getBaseUrl(req));
+    const resetUrl = buildResetUrl(token, resolveSiteUrl(req));
 
     // No real email transport yet. Log the URL on the server so a
     // developer (or a future SMTP/Resend adapter) can pick it up.

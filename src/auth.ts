@@ -1,5 +1,8 @@
 import NextAuth from "next-auth";
 import { buildAuthProviders } from "@/lib/auth-providers";
+import { bootstrapAuthSiteUrl } from "@/lib/site-url";
+
+bootstrapAuthSiteUrl();
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
