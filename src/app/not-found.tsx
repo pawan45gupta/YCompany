@@ -18,9 +18,9 @@ export default function NotFoundPage() {
       <Typography color="text.secondary" sx={{ mb: 3 }}>
         {t("notFound.body")}
       </Typography>
-      <Button component={Link} href="/" variant="contained">
-        {t("notFound.home")}
-      </Button>
+      <Link href="/" style={{ textDecoration: "none" }}>
+        <Button variant="contained">{t("notFound.home")}</Button>
+      </Link>
     </Container>
   );
 }
