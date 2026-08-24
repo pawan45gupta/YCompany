@@ -245,22 +245,16 @@ function SearchClientInner() {
     [searchParams],
   );
 
-  const [queryInput, setQueryInput] = useState(() => filters.query ?? "");
+  const [draftQuery, setDraftQuery] = useState<string | null>(null);
+  const queryInput = draftQuery ?? filters.query ?? "";
   const debouncedQuery = useDebounce(queryInput, 300);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [priceDraft, setPriceDraft] = useState<[number, number] | null>(null);
   const filtersRef = useRef(filters);
-  const inputFocusedRef = useRef(false);
 
   useEffect(() => {
     filtersRef.current = filters;
   }, [filters]);
-
-  useEffect(() => {
-    if (!inputFocusedRef.current) {
-      setQueryInput(filters.query ?? "");
-    }
-  }, [filters.query]);
 
   const pushFilters = useCallback(
     (next: ProductFilters) => {
@@ -323,7 +317,7 @@ function SearchClientInner() {
   const isResultsLoading = isFetching || isPlaceholderData;
 
   const updateQuery = (value: string) => {
-    setQueryInput(value);
+    setDraftQuery(value);
   };
 
   const submitQuery = useCallback(
@@ -341,7 +335,7 @@ function SearchClientInner() {
   const selectProduct = useCallback(
     (product: Product) => {
       trackSearch(product.name);
-      setQueryInput(product.name);
+      setDraftQuery(null);
       pushFilters({
         ...filtersRef.current,
         query: product.name,
@@ -380,6 +374,7 @@ function SearchClientInner() {
   };
 
   const clearQuery = () => {
+    setDraftQuery(null);
     pushFilters({ ...filters, query: undefined });
   };
 
@@ -422,21 +417,28 @@ function SearchClientInner() {
             onClear={clearQuery}
             placeholder={t("search.placeholder")}
             onFocus={() => {
-              inputFocusedRef.current = true;
+              setDraftQuery((current) => current ?? filters.query ?? "");
             }}
             onBlur={() => {
-              inputFocusedRef.current = false;
+              setDraftQuery(null);
             }}
             inputSx={{
               "& .MuiOutlinedInput-root": {
                 borderRadius: 999,
                 bgcolor: "background.paper",
-                minHeight: 56,
+                minHeight: { xs: 48, sm: 56 },
                 alignItems: "center",
+                pl: { xs: 1.25, sm: 1.5 },
+                pr: { xs: 0.5, sm: 0.75 },
               },
               "& .MuiOutlinedInput-input": {
-                py: 1.75,
-                fontSize: "1.0625rem",
+                py: { xs: 1.25, sm: 1.75 },
+                px: 0.5,
+                fontSize: { xs: "0.9375rem", sm: "1.0625rem" },
+                minWidth: 0,
+              },
+              "& .MuiInputAdornment-root": {
+                flexShrink: 0,
               },
             }}
           />
@@ -519,7 +521,7 @@ function SearchClientInner() {
               justifyContent: "space-between",
             }}
           >
-            <Typography variant="body1" color="text.secondary">
+            <Typography variant="body1" color="text.secondary" sx={{ minWidth: 0 }}>
               {results.length === 1
                 ? t("search.results", { count: results.length })
                 : t("search.resultsPlural", { count: results.length })}
@@ -532,7 +534,7 @@ function SearchClientInner() {
                 </>
               ) : null}
             </Typography>
-            <FormControl size="small" sx={{ minWidth: 200 }}>
+            <FormControl size="small" sx={{ minWidth: { xs: "100%", sm: 200 }, width: { xs: "100%", sm: "auto" } }}>
               <InputLabel id="search-sort-label">{t("search.sortBy")}</InputLabel>
               <Select
                 labelId="search-sort-label"

@@ -182,27 +182,38 @@ export function ProductSearchAutocomplete({
             input: {
               ...params.slotProps.input,
               endAdornment: (
-                <>
-                  {params.slotProps.input.endAdornment}
+                <InputAdornment
+                  position="end"
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.25,
+                    maxWidth: { xs: 72, sm: 88 },
+                    flexShrink: 0,
+                    ml: 0.25,
+                  }}
+                >
                   {showClear ? (
-                    <InputAdornment position="end">
-                      <IconButton
-                        type="button"
-                        edge="end"
-                        size="small"
-                        aria-label={t("search.clearSearchAria")}
-                        onClick={handleClear}
-                      >
-                        <ClearIcon fontSize="small" />
-                      </IconButton>
-                    </InputAdornment>
-                  ) : null}
-                  <InputAdornment position="end">
-                    <IconButton type="submit" edge="end" aria-label={t("header.searchAria")}>
-                      <SearchIcon />
+                    <IconButton
+                      type="button"
+                      edge="end"
+                      size="small"
+                      aria-label={t("search.clearSearchAria")}
+                      onClick={handleClear}
+                      sx={{ p: 0.75 }}
+                    >
+                      <ClearIcon fontSize="small" />
                     </IconButton>
-                  </InputAdornment>
-                </>
+                  ) : null}
+                  <IconButton
+                    type="submit"
+                    edge="end"
+                    aria-label={t("header.searchAria")}
+                    sx={{ p: 0.75 }}
+                  >
+                    <SearchIcon fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
               ),
             },
           }}

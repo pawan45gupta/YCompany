@@ -34,7 +34,11 @@ export function Footer() {
             gap: 2,
           }}
         >
-          <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.43 }}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ lineHeight: 1.43, maxWidth: { xs: "100%", sm: "none" } }}
+          >
             {t("footer.copyright", { year: new Date().getFullYear() })}
           </Typography>
           <Box
@@ -44,7 +48,7 @@ export function Footer() {
               flexDirection: "row",
               alignItems: "center",
               gap: 2,
-              flexWrap: "nowrap",
+              flexWrap: "wrap",
             }}
           >
             <MuiLink

@@ -77,10 +77,17 @@ export function Header() {
       borderRadius: 999,
       minHeight: { xs: 44, sm: 48 },
       alignItems: "center",
+      pl: { xs: 1.25, sm: 1.5 },
+      pr: { xs: 0.5, sm: 0.75 },
     },
     "& .MuiOutlinedInput-input": {
       py: 1.25,
-      fontSize: "0.9375rem",
+      px: 0.5,
+      fontSize: { xs: "0.875rem", sm: "0.9375rem" },
+      minWidth: 0,
+    },
+    "& .MuiInputAdornment-root": {
+      flexShrink: 0,
     },
   } as const;
 
@@ -133,7 +140,7 @@ export function Header() {
             underline="none"
             sx={{
               ...navLinkSx,
-              display: { xs: "none", sm: "inline-flex" },
+              display: { xs: "none", md: "inline-flex" },
             }}
           >
             {t("common.signIn")}
@@ -144,7 +151,7 @@ export function Header() {
             underline="none"
             sx={{
               ...navLinkSx,
-              display: { xs: "none", md: "inline-flex" },
+              display: { xs: "none", lg: "inline-flex" },
               color: "primary.contrastText",
               bgcolor: "primary.main",
               "&:hover": { bgcolor: "primary.dark", opacity: 1 },
@@ -163,7 +170,7 @@ export function Header() {
         display: "flex",
         alignItems: "center",
         justifyContent: "flex-end",
-        gap: 0.5,
+        gap: { xs: 0.25, sm: 0.5 },
         flexShrink: 0,
         minWidth: 0,
       }}
@@ -192,16 +199,16 @@ export function Header() {
   return (
     <AppBar position="sticky" elevation={0} sx={{ borderBottom: 1, borderColor: "divider" }}>
       <Container maxWidth="lg">
-        <Toolbar disableGutters sx={{ py: 1 }}>
+        <Toolbar disableGutters sx={{ py: { xs: 1, md: 1 }, overflow: "hidden" }}>
           <Box
             sx={{
               display: "grid",
               width: "100%",
               alignItems: "center",
-              columnGap: { xs: 1, md: 2 },
+              columnGap: { xs: 0.75, sm: 1, md: 2 },
               rowGap: { xs: 1, md: 0 },
               gridTemplateColumns: {
-                xs: "auto 1fr auto",
+                xs: "auto minmax(0, 1fr) auto",
                 md: "minmax(0, 1fr) minmax(240px, 480px) minmax(0, 1fr)",
               },
               gridTemplateRows: { xs: "auto auto", md: "auto" },
@@ -211,27 +218,44 @@ export function Header() {
               sx={{
                 gridColumn: 1,
                 gridRow: 1,
-                display: "flex",
+                display: { xs: "flex", md: "none" },
                 alignItems: "center",
-                gap: 0.5,
                 justifySelf: "start",
-                minWidth: 0,
               }}
             >
               <IconButton
                 color="inherit"
-                sx={{ display: { md: "none" }, flexShrink: 0 }}
+                sx={{ flexShrink: 0 }}
                 onClick={() => setMobileOpen(true)}
                 aria-label={t("header.openMenu")}
               >
                 <MenuIcon />
               </IconButton>
+            </Box>
+
+            <Box
+              sx={{
+                gridColumn: { xs: 2, md: 1 },
+                gridRow: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: { xs: "center", md: "flex-start" },
+                justifySelf: { xs: "center", md: "start" },
+                minWidth: 0,
+                maxWidth: "100%",
+              }}
+            >
               <Link
                 href="/"
                 aria-label={t("common.brand")}
                 style={{ textDecoration: "none", lineHeight: 0, flexShrink: 0 }}
               >
-                <YCompanyLogo variant="full" color="light" height={34} />
+                <Box sx={{ display: { xs: "none", sm: "block" } }}>
+                  <YCompanyLogo variant="full" color="light" height={34} />
+                </Box>
+                <Box sx={{ display: { xs: "block", sm: "none" } }}>
+                  <YCompanyLogo variant="mark" color="light" height={32} />
+                </Box>
               </Link>
             </Box>
 
