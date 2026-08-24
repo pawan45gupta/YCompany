@@ -1,8 +1,12 @@
 import { ForgotPasswordView } from "@/app/forgot-password/ForgotPasswordView";
+import type { Metadata } from "next";
+import { getTranslations } from "@/i18n/server";
 
-export const metadata = {
-  title: "Forgot password",
-  description: "Request a password-reset link for your YCompany account.",
+const { dict } = getTranslations();
+
+export const metadata: Metadata = {
+  title: dict.forgotPassword.metaTitle,
+  description: dict.forgotPassword.metaDescription,
 };
 
 export default function ForgotPasswordPage() {

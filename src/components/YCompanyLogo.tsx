@@ -1,4 +1,5 @@
 import { Box, type SxProps, type Theme } from "@mui/material";
+import { getDictionary } from "@/i18n/dictionary";
 
 type Variant = "full" | "mark";
 type ColorMode = "light" | "dark";
@@ -7,6 +8,8 @@ type Props = {
   variant?: Variant;
   color?: ColorMode;
   height?: number;
+  /** Accessible name; defaults to `common.brand` from en.json. */
+  ariaLabel?: string;
   sx?: SxProps<Theme>;
 };
 
@@ -62,10 +65,12 @@ export function YCompanyLogo({
   variant = "full",
   color = "dark",
   height = 36,
+  ariaLabel,
   sx,
 }: Props) {
   const palette = colors[color];
   const markSize = height;
+  const label = ariaLabel ?? getDictionary().common.brand;
 
   if (variant === "mark") {
     return (
@@ -86,7 +91,7 @@ export function YCompanyLogo({
       width={width}
       height={wordHeight}
       role="img"
-      aria-label="YCompany"
+      aria-label={label}
       sx={{ display: "block", flexShrink: 0, ...sx }}
     >
       <rect width="40" height="40" rx="10" fill={palette.markBg} />

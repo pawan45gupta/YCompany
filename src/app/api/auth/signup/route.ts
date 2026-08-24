@@ -34,7 +34,7 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    return NextResponse.json({ error: apiMessage("invalidJson") }, { status: 400 });
   }
 
   let parsed;
@@ -46,8 +46,8 @@ export async function POST(req: Request) {
     const msg =
       err && typeof err === "object" && "issues" in err
         ? // @ts-expect-error - narrowed at runtime
-          err.issues?.[0]?.message ?? "Invalid payload"
-        : "Invalid payload";
+          err.issues?.[0]?.message ?? apiMessage("invalidPayload")
+        : apiMessage("invalidPayload");
     return NextResponse.json({ error: msg }, { status: 400 });
   }
 

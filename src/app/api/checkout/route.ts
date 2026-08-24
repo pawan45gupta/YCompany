@@ -27,7 +27,7 @@ export async function POST(req: Request) {
   const limited = rateLimit(`checkout:${ip}`, 20, 60_000);
   if (!limited.ok) {
     return NextResponse.json(
-      { error: "Too many requests", retryAfter: limited.retryAfter },
+      { error: apiMessage("tooManyRequests"), retryAfter: limited.retryAfter },
       { status: 429 },
     );
   }
@@ -36,14 +36,14 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    return NextResponse.json({ error: apiMessage("invalidJson") }, { status: 400 });
   }
 
   let parsed;
   try {
     parsed = parseCheckoutBody(body);
   } catch {
-    return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+    return NextResponse.json({ error: apiMessage("invalidPayload") }, { status: 400 });
   }
 
   const session = await auth();
@@ -119,7 +119,7 @@ export async function POST(req: Request) {
     stripe = getStripe();
   } catch {
     return NextResponse.json(
-      { error: "Could not initialize Stripe. Check STRIPE_SECRET_KEY." },
+      { error: apiMessage("stripeInitFailed") },
       { status: 503 },
     );
   }
@@ -175,7 +175,7 @@ export async function POST(req: Request) {
 
     if (!checkoutSession.url) {
       return NextResponse.json(
-        { error: "Could not create checkout session" },
+        { error: apiMessage("checkoutSessionFailed") },
         { status: 500 },
       );
     }

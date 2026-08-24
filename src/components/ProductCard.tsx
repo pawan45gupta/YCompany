@@ -43,7 +43,17 @@ function ProductCardInner({ product, priority = false }: Props) {
 
   return (
     <StyledCard variant="outlined">
-      <Link href={`/products/${product.slug}`} style={{ textDecoration: "none", color: "inherit" }}>
+      <Link
+        href={`/products/${product.slug}`}
+        style={{
+          textDecoration: "none",
+          color: "inherit",
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          minWidth: 0,
+        }}
+      >
         <Box sx={{ position: "relative", height: 220, width: "100%", bgcolor: "grey.100" }}>
           <Image
             src={product.image}
@@ -69,11 +79,30 @@ function ProductCardInner({ product, priority = false }: Props) {
             />
           )}
         </Box>
-        <CardContent sx={{ flex: 1 }}>
+        <CardContent
+          sx={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            "&:last-child": { pb: 2 },
+          }}
+        >
           <Typography variant="overline" color="text.secondary">
             {product.brand} · {product.category}
           </Typography>
-          <Typography variant="h6" component="h2" gutterBottom>
+          <Typography
+            variant="h6"
+            component="h2"
+            gutterBottom
+            sx={{
+              flex: 1,
+              minHeight: "3.25rem",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+          >
             {product.name}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
@@ -84,7 +113,7 @@ function ProductCardInner({ product, priority = false }: Props) {
           </Typography>
         </CardContent>
       </Link>
-      <CardActions sx={{ p: 2, pt: 0 }}>
+      <CardActions sx={{ p: 2, pt: 0, mt: "auto" }}>
         <Button
           fullWidth
           variant="contained"

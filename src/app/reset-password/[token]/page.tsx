@@ -1,8 +1,12 @@
 import { ResetPasswordView } from "@/app/reset-password/[token]/ResetPasswordView";
+import type { Metadata } from "next";
+import { getTranslations } from "@/i18n/server";
 
-export const metadata = {
-  title: "Reset password",
-  description: "Set a new password for your YCompany account.",
+const { dict } = getTranslations();
+
+export const metadata: Metadata = {
+  title: dict.resetPassword.metaTitle,
+  description: dict.resetPassword.metaDescription,
 };
 
 // Next.js 16: dynamic route params are async. The page is a server

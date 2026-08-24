@@ -7,6 +7,7 @@ import {
 import { nrRecordEvent } from "@/lib/observability/newrelic-server";
 import { searchProducts } from "@/lib/search";
 import { rateLimit } from "@/lib/rate-limit";
+import { apiMessage } from "@/i18n/api";
 
 export async function GET(req: Request) {
   const ip =
@@ -16,7 +17,7 @@ export async function GET(req: Request) {
   const limited = rateLimit(`search:${ip}`, 120, 60_000);
   if (!limited.ok) {
     return NextResponse.json(
-      { error: "Too many requests", retryAfter: limited.retryAfter },
+      { error: apiMessage("tooManyRequests"), retryAfter: limited.retryAfter },
       { status: 429 },
     );
   }

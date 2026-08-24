@@ -3,7 +3,7 @@
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import { Box, Stack, Typography } from "@mui/material";
-import { evaluatePassword } from "@/lib/auth/password-policy";
+import { evaluatePassword, type PasswordCheckId } from "@/lib/auth/password-policy";
 import { useTranslation } from "@/i18n/client";
 
 type Props = {
@@ -11,7 +11,7 @@ type Props = {
   password: string;
 };
 
-const LABEL_KEY: Record<"length" | "letter" | "digit", string> = {
+const LABEL_KEY: Record<PasswordCheckId, string> = {
   length: "passwordPolicy.length",
   letter: "passwordPolicy.letter",
   digit: "passwordPolicy.digit",

@@ -3,11 +3,14 @@
  * `src/lib/env.ts` (`passwordSchema`); this module is the *client mirror*
  * so the Signup / Reset views can give live feedback without a round-trip
  * and without bundling Zod just to render a checklist.
+ *
+ * Display labels live in `en.json` (`passwordPolicy.*`) via PasswordChecklist.
  */
 
+export type PasswordCheckId = "length" | "letter" | "digit";
+
 export type PasswordCheck = {
-  id: "length" | "letter" | "digit";
-  label: string;
+  id: PasswordCheckId;
   passed: boolean;
 };
 
@@ -18,17 +21,9 @@ export type PasswordEvaluation = {
 
 export function evaluatePassword(password: string): PasswordEvaluation {
   const checks: PasswordCheck[] = [
-    {
-      id: "length",
-      label: "At least 8 characters",
-      passed: password.length >= 8,
-    },
-    {
-      id: "letter",
-      label: "Contains a letter",
-      passed: /[A-Za-z]/.test(password),
-    },
-    { id: "digit", label: "Contains a number", passed: /\d/.test(password) },
+    { id: "length", passed: password.length >= 8 },
+    { id: "letter", passed: /[A-Za-z]/.test(password) },
+    { id: "digit", passed: /\d/.test(password) },
   ];
   return { checks, strong: checks.every((c) => c.passed) };
 }

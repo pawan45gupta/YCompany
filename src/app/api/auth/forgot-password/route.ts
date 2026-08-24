@@ -44,14 +44,14 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    return NextResponse.json({ error: apiMessage("invalidJson") }, { status: 400 });
   }
 
   let parsed;
   try {
     parsed = parseForgotPasswordBody(body);
   } catch {
-    return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+    return NextResponse.json({ error: apiMessage("invalidPayload") }, { status: 400 });
   }
 
   // Privacy: we *always* return the same success shape regardless of

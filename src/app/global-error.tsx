@@ -2,6 +2,8 @@
 
 import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
+import { getDictionary } from "@/i18n/dictionary";
+import { translate } from "@/i18n/translate";
 import { isSentryEnabled } from "@/lib/observability/env";
 
 export default function GlobalError({
@@ -11,6 +13,9 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const dict = getDictionary();
+  const t = (key: string) => translate(dict, key);
+
   useEffect(() => {
     if (isSentryEnabled()) {
       Sentry.captureException(error);
@@ -20,10 +25,8 @@ export default function GlobalError({
   return (
     <html lang="en">
       <body style={{ fontFamily: "system-ui, sans-serif", padding: 48, textAlign: "center" }}>
-        <h1 style={{ fontSize: "1.5rem", marginBottom: 8 }}>Something went wrong</h1>
-        <p style={{ color: "#666", marginBottom: 24 }}>
-          We have been notified and are looking into it.
-        </p>
+        <h1 style={{ fontSize: "1.5rem", marginBottom: 8 }}>{t("errors.title")}</h1>
+        <p style={{ color: "#666", marginBottom: 24 }}>{t("errors.body")}</p>
         <button
           type="button"
           onClick={() => reset()}
@@ -37,7 +40,7 @@ export default function GlobalError({
             fontWeight: 600,
           }}
         >
-          Try again
+          {t("errors.tryAgain")}
         </button>
       </body>
     </html>

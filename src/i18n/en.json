@@ -115,6 +115,8 @@
   },
   "cart": {
     "title": "Cart",
+    "metaTitle": "Cart",
+    "metaDescription": "Review your YCompany cart, apply a promo code, and proceed to secure checkout.",
     "empty": "Your cart is empty.",
     "product": "Product",
     "line": "Line",
@@ -160,6 +162,8 @@
   },
   "signup": {
     "title": "Create your account",
+    "metaTitle": "Create account",
+    "metaDescription": "Sign up for a YCompany account to track orders and check out faster.",
     "subtitle": "Save your details, track orders, and check out faster.",
     "name": "Full name (optional)",
     "email": "Email",
@@ -174,6 +178,8 @@
   },
   "forgotPassword": {
     "title": "Reset your password",
+    "metaTitle": "Forgot password",
+    "metaDescription": "Request a password-reset link for your YCompany account.",
     "subtitle": "Enter the email on your account and we'll send a link to set a new password.",
     "email": "Email",
     "submit": "Send reset link",
@@ -185,6 +191,8 @@
   },
   "resetPassword": {
     "title": "Set a new password",
+    "metaTitle": "Reset password",
+    "metaDescription": "Set a new password for your YCompany account.",
     "subtitle": "Choose a strong password you don't use anywhere else.",
     "password": "New password",
     "confirmPassword": "Confirm password",
@@ -204,14 +212,21 @@
   },
   "checkout": {
     "title": "Checkout",
+    "subtitle": "Review your details, then continue to secure payment with Stripe.",
+    "metaTitle": "Checkout",
+    "metaDescription": "Complete your YCompany order with secure Stripe checkout.",
     "loading": "Loading checkout…",
     "breadcrumbCart": "Cart",
-    "breadcrumbCheckout": "Checkout",
+    "breadcrumbCheckout": "Details",
+    "breadcrumbPay": "Pay",
     "securePayment": "Secure payment",
+    "itemCount": "{count} item",
+    "itemsCount": "{count} items",
+    "trustTitle": "Secure checkout",
     "emptyTitle": "Your cart is empty",
     "emptyBody": "Add items from the shop before checking out.",
-    "stepContact": "1. Contact",
-    "stepPromo": "2. Promo code",
+    "stepContact": "Contact",
+    "stepPromo": "Promo code",
     "orderSummary": "Order summary",
     "signedInReceipt": "Signed in as {email}. Receipt will be sent here.",
     "emailLabel": "Email for receipt",
@@ -228,10 +243,23 @@
     "failed": "Checkout failed"
   },
   "checkoutSuccess": {
-    "title": "Thank you",
-    "body": "Your payment is processing with Stripe. Confirmation email follows from Stripe when the session completes.",
-    "session": "Session: {id}",
+    "title": "Thank you for your order",
+    "metaTitle": "Order confirmation",
+    "metaDescription": "Your YCompany payment is processing. Order confirmation follows from Stripe.",
+    "body": "Your payment was received. YCompany is finalizing your order and will send a confirmation email shortly.",
+    "stepEmail": "Watch for a confirmation email from Stripe.",
+    "stepAccount": "Track status and past orders in your account.",
     "viewOrders": "View order history"
+  },
+  "errors": {
+    "title": "Something went wrong",
+    "body": "We have been notified and are looking into it.",
+    "tryAgain": "Try again"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "That page does not exist or may have moved.",
+    "home": "Back to home"
   },
   "account": {
     "title": "Account",
@@ -271,6 +299,16 @@
     "cannotCancel": "This order can no longer be cancelled",
     "tooManyRequests": "Too many requests",
     "emailTaken": "An account with this email already exists",
-    "resetTokenInvalid": "Invalid or expired reset link"
+    "resetTokenInvalid": "Invalid or expired reset link",
+    "invalidJson": "Invalid JSON",
+    "invalidPayload": "Invalid payload",
+    "stripeInitFailed": "Could not initialize Stripe. Check STRIPE_SECRET_KEY.",
+    "checkoutSessionFailed": "Could not create checkout session",
+    "sessionIdRequired": "sessionId required",
+    "stripeNotConfigured": "Stripe not configured",
+    "paymentNotCompleted": "Payment not completed",
+    "sessionWrongAccount": "Session does not belong to this account",
+    "orderItemsUnreadable": "Could not read order items",
+    "orderSyncFailed": "Could not sync order"
   }
 }
