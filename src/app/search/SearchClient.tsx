@@ -429,7 +429,7 @@ function SearchClientInner() {
                 minHeight: { xs: 48, sm: 56 },
                 alignItems: "center",
                 pl: { xs: 1.25, sm: 1.5 },
-                pr: { xs: 0.5, sm: 0.75 },
+                pr: { xs: 1, sm: 1.25 },
               },
               "& .MuiOutlinedInput-input": {
                 py: { xs: 1.25, sm: 1.75 },

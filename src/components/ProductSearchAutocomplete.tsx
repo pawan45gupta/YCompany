@@ -191,6 +191,7 @@ export function ProductSearchAutocomplete({
                     maxWidth: { xs: 72, sm: 88 },
                     flexShrink: 0,
                     ml: 0.25,
+                    mr: { xs: 0.75, sm: 1 },
                   }}
                 >
                   {showClear ? (
