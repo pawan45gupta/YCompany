@@ -67,6 +67,26 @@ describe("Header", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
+  it("shows sign-in and sign-up links in the mobile drawer when logged out", async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<Header />);
+
+    await user.click(screen.getByLabelText(/open menu/i));
+    const drawer = screen.getByRole("dialog");
+    expect(within(drawer).getByRole("link", { name: /^search$/i })).toHaveAttribute(
+      "href",
+      "/search",
+    );
+    expect(within(drawer).getByRole("link", { name: /sign in/i })).toHaveAttribute(
+      "href",
+      "/login",
+    );
+    expect(within(drawer).getByRole("link", { name: /sign up/i })).toHaveAttribute(
+      "href",
+      "/signup",
+    );
+  });
+
   it("signs out from mobile drawer when authenticated", async () => {
     const user = userEvent.setup();
     mockUseSession.mockReturnValue({

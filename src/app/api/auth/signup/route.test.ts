@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "@/app/api/auth/signup/route";
+import * as emailNotifications from "@/lib/email/notifications";
 import { __resetUsersForTests, findUserByEmail } from "@/lib/users/store";
+import * as userStore from "@/lib/users/store";
+import { makeStoredUser } from "@/test/fixtures/user";
+import { toPublicUser } from "@/types/user";
 
 function postJson(body: unknown, headers: Record<string, string> = {}) {
   return new Request("http://localhost/api/auth/signup", {
@@ -71,6 +75,18 @@ describe("POST /api/auth/signup", () => {
   });
 
   it("returns 429 once the per-IP burst is exhausted", async () => {
+    vi.spyOn(userStore, "createUser").mockImplementation(async (input) => ({
+      ok: true,
+      user: toPublicUser(
+        makeStoredUser({
+          id: `user-${input.email}`,
+          email: input.email,
+          name: input.name ?? null,
+        }),
+      ),
+    }));
+    vi.spyOn(emailNotifications, "sendWelcomeEmail").mockResolvedValue(undefined);
+
     // The limit is 10/minute. Use a distinct IP so we don't poison other tests.
     const ip = "10.0.0.99";
     for (let i = 0; i < 10; i++) {
